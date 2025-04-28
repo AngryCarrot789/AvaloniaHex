@@ -13,17 +13,17 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <DocumentationFile>bin\Debug\net6.0\AvaloniaHex.xml</DocumentationFile>
+        <DocumentationFile>bin\Debug\net6.0\AvaloniaHex.xml</DocumentationFile>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <DocumentationFile>bin\Release\net6.0\AvaloniaHex.xml</DocumentationFile>
+        <DocumentationFile>bin\Release\net6.0\AvaloniaHex.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Avalonia" Version="11.2.0" />
+        <PackageReference Include="Avalonia" Version="11.2.0"/>
     </ItemGroup>
-    
+
     <ItemGroup>
         <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
     </ItemGroup>

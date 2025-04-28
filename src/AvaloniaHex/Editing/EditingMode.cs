@@ -3,8 +3,7 @@ namespace AvaloniaHex.Editing;
 /// <summary>
 /// Provides members describing all possible editing modes a caret in a hex editor can be.
 /// </summary>
-public enum EditingMode
-{
+public enum EditingMode {
     /// <summary>
     /// Indicates the cursor is overwriting the existing bytes.
     /// </summary>

@@ -4,7 +4,6 @@ This is a(n experimental) hex editor control for the [Avalonia](https://github.c
 
 ![](assets/demo.gif)
 
-
 ## Features
 
 - Display binary data in hex, binary and ASCII.
@@ -19,7 +18,6 @@ This is a(n experimental) hex editor control for the [Avalonia](https://github.c
 
 - Stable: [NuGet](https://www.nuget.org/packages/AvaloniaHex)
 - Nightly: [AppVeyor](https://ci.appveyor.com/project/Washi1337/avaloniahex/build/artifacts)
-
 
 ## Quick Start Guide
 
@@ -63,7 +61,6 @@ editor.Document = new MemoryBinaryDocument(File.ReadAllBytes(@"C:\Path\To\File.b
 ```
 
 See [examples](examples) for more details.
-
 
 ## License
 

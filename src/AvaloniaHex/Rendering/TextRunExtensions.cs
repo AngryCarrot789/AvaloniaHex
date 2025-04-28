@@ -3,13 +3,11 @@ using Avalonia.Media.TextFormatting;
 
 namespace AvaloniaHex.Rendering;
 
-internal static class TextRunExtensions
-{
-    public static GenericTextRunProperties WithForeground(this GenericTextRunProperties self, IBrush? foreground)
-    {
+internal static class TextRunExtensions {
+    public static GenericTextRunProperties WithForeground(this GenericTextRunProperties self, IBrush? foreground) {
         if (Equals(self.ForegroundBrush, foreground))
             return self;
-        
+
         return new GenericTextRunProperties(
             self.Typeface,
             self.FontRenderingEmSize,
@@ -20,12 +18,11 @@ internal static class TextRunExtensions
             self.CultureInfo
         );
     }
-    
-    public static GenericTextRunProperties WithBackground(this GenericTextRunProperties self, IBrush? background)
-    {
+
+    public static GenericTextRunProperties WithBackground(this GenericTextRunProperties self, IBrush? background) {
         if (Equals(self.BackgroundBrush, background))
             return self;
-        
+
         return new GenericTextRunProperties(
             self.Typeface,
             self.FontRenderingEmSize,
@@ -36,12 +33,11 @@ internal static class TextRunExtensions
             self.CultureInfo
         );
     }
-    
-    public static GenericTextRunProperties WithBrushes(this GenericTextRunProperties self, IBrush? foreground, IBrush? background)
-    {
+
+    public static GenericTextRunProperties WithBrushes(this GenericTextRunProperties self, IBrush? foreground, IBrush? background) {
         if (Equals(self.ForegroundBrush, foreground) && Equals(self.BackgroundBrush, background))
             return self;
-        
+
         return new GenericTextRunProperties(
             self.Typeface,
             self.FontRenderingEmSize,

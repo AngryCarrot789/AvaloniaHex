@@ -9,13 +9,11 @@ namespace AvaloniaHex.Editing;
 /// <summary>
 /// Represents the layer that renders the caret in a hex view.
 /// </summary>
-public class CaretLayer : Layer
-{
+public class CaretLayer : Layer {
     private readonly DispatcherTimer _blinkTimer;
     private bool _caretVisible;
 
-    static CaretLayer()
-    {
+    static CaretLayer() {
         AffectsRender<CaretLayer>(
             InsertCaretWidthProperty,
             PrimaryColumnBorderProperty,
@@ -29,30 +27,27 @@ public class CaretLayer : Layer
     /// Creates a new caret layer.
     /// </summary>
     /// <param name="caret">The caret to render.</param>
-    public CaretLayer(Caret caret)
-    {
-        Caret = caret;
-        Caret.LocationChanged += CaretOnChanged;
-        Caret.ModeChanged += CaretOnChanged;
-        Caret.PrimaryColumnChanged += CaretOnChanged;
-        IsHitTestVisible = false;
+    public CaretLayer(Caret caret) {
+        this.Caret = caret;
+        this.Caret.LocationChanged += this.CaretOnChanged;
+        this.Caret.ModeChanged += this.CaretOnChanged;
+        this.Caret.PrimaryColumnChanged += this.CaretOnChanged;
+        this.IsHitTestVisible = false;
 
-        _blinkTimer = new DispatcherTimer
-        {
+        this._blinkTimer = new DispatcherTimer {
             Interval = TimeSpan.FromSeconds(0.5),
             IsEnabled = true
         };
 
-        _blinkTimer.Tick += BlinkTimerOnTick;
+        this._blinkTimer.Tick += this.BlinkTimerOnTick;
     }
-    
+
     /// <inheritdoc />
-    protected override void OnUnloaded(RoutedEventArgs e)
-    {
+    protected override void OnUnloaded(RoutedEventArgs e) {
         base.OnUnloaded(e);
 
-        _blinkTimer.IsEnabled = false;
-        _blinkTimer.Tick -= BlinkTimerOnTick;
+        this._blinkTimer.IsEnabled = false;
+        this._blinkTimer.Tick -= this.BlinkTimerOnTick;
     }
 
     /// <inheritdoc />
@@ -66,15 +61,12 @@ public class CaretLayer : Layer
     /// <summary>
     /// Gets or sets a value indicating whether the caret is visible.
     /// </summary>
-    public bool CaretVisible
-    {
-        get => _caretVisible;
-        set
-        {
-            if (_caretVisible != value)
-            {
-                _caretVisible = value;
-                InvalidateVisual();
+    public bool CaretVisible {
+        get => this._caretVisible;
+        set {
+            if (this._caretVisible != value) {
+                this._caretVisible = value;
+                this.InvalidateVisual();
             }
         }
     }
@@ -91,10 +83,9 @@ public class CaretLayer : Layer
     /// <summary>
     /// Gets or sets the animation interval of the cursor blinker.
     /// </summary>
-    public TimeSpan BlinkingInterval
-    {
-        get => _blinkTimer.Interval;
-        set => _blinkTimer.Interval = value;
+    public TimeSpan BlinkingInterval {
+        get => this._blinkTimer.Interval;
+        set => this._blinkTimer.Interval = value;
     }
 
     /// <summary>
@@ -106,24 +97,20 @@ public class CaretLayer : Layer
     /// <summary>
     /// Gets or sets the width of the caret when it is in insertion mode.
     /// </summary>
-    public double InsertCaretWidth
-    {
-        get => GetValue(InsertCaretWidthProperty);
-        set => SetValue(InsertCaretWidthProperty, value);
+    public double InsertCaretWidth {
+        get => this.GetValue(InsertCaretWidthProperty);
+        set => this.SetValue(InsertCaretWidthProperty, value);
     }
 
     /// <summary>
     /// Gets or sets a value indicating whether the cursor of the caret is blinking.
     /// </summary>
-    public bool IsBlinking
-    {
-        get => _blinkTimer.IsEnabled;
-        set
-        {
-            if (_blinkTimer.IsEnabled != value)
-            {
-                _blinkTimer.IsEnabled = value;
-                CaretVisible = true;
+    public bool IsBlinking {
+        get => this._blinkTimer.IsEnabled;
+        set {
+            if (this._blinkTimer.IsEnabled != value) {
+                this._blinkTimer.IsEnabled = value;
+                this.CaretVisible = true;
             }
         }
     }
@@ -137,10 +124,9 @@ public class CaretLayer : Layer
     /// <summary>
     /// Gets or sets the pen used to draw the border of the cursor in the primary column.
     /// </summary>
-    public IPen? PrimaryColumnBorder
-    {
-        get => GetValue(PrimaryColumnBorderProperty);
-        set => SetValue(PrimaryColumnBorderProperty, value);
+    public IPen? PrimaryColumnBorder {
+        get => this.GetValue(PrimaryColumnBorderProperty);
+        set => this.SetValue(PrimaryColumnBorderProperty, value);
     }
 
     /// <summary>
@@ -155,10 +141,9 @@ public class CaretLayer : Layer
     /// <summary>
     /// Gets or sets the brush used to draw the background of the cursor in the primary column.
     /// </summary>
-    public IBrush? PrimaryColumnBackground
-    {
-        get => GetValue(PrimaryColumnBackgroundProperty);
-        set => SetValue(PrimaryColumnBackgroundProperty, value);
+    public IBrush? PrimaryColumnBackground {
+        get => this.GetValue(PrimaryColumnBackgroundProperty);
+        set => this.SetValue(PrimaryColumnBackgroundProperty, value);
     }
 
     /// <summary>
@@ -170,10 +155,9 @@ public class CaretLayer : Layer
     /// <summary>
     /// Gets or sets the pen used to draw the border of the cursor in the secondary columns.
     /// </summary>
-    public IPen? SecondaryColumnBorder
-    {
-        get => GetValue(SecondaryColumnBorderProperty);
-        set => SetValue(SecondaryColumnBorderProperty, value);
+    public IPen? SecondaryColumnBorder {
+        get => this.GetValue(SecondaryColumnBorderProperty);
+        set => this.SetValue(SecondaryColumnBorderProperty, value);
     }
 
     /// <summary>
@@ -188,54 +172,47 @@ public class CaretLayer : Layer
     /// <summary>
     /// Gets or sets the brush used to draw the background of the cursor in the secondary columns.
     /// </summary>
-    public IBrush? SecondaryColumnBackground
-    {
-        get => GetValue(SecondaryColumnBackgroundProperty);
-        set => SetValue(SecondaryColumnBackgroundProperty, value);
+    public IBrush? SecondaryColumnBackground {
+        get => this.GetValue(SecondaryColumnBackgroundProperty);
+        set => this.SetValue(SecondaryColumnBackgroundProperty, value);
     }
 
-    private void BlinkTimerOnTick(object? sender, EventArgs e)
-    {
-        CaretVisible = !CaretVisible;
-        InvalidateVisual();
+    private void BlinkTimerOnTick(object? sender, EventArgs e) {
+        this.CaretVisible = !this.CaretVisible;
+        this.InvalidateVisual();
     }
 
-    private void CaretOnChanged(object? sender, EventArgs e)
-    {
-        CaretVisible = true;
-        InvalidateVisual();
+    private void CaretOnChanged(object? sender, EventArgs e) {
+        this.CaretVisible = true;
+        this.InvalidateVisual();
     }
 
     /// <inheritdoc />
-    public override void Render(DrawingContext context)
-    {
+    public override void Render(DrawingContext context) {
         base.Render(context);
 
-        if (HexView is null || !HexView.IsFocused)
+        if (this.HexView is null || !this.HexView.IsFocused)
             return;
 
-        var line = HexView.GetVisualLineByLocation(Caret.Location);
+        VisualBytesLine? line = this.HexView.GetVisualLineByLocation(this.Caret.Location);
         if (line is null)
             return;
 
-        for (int i = 0; i < HexView.Columns.Count; i++)
-        {
-            var column = HexView.Columns[i];
+        for (int i = 0; i < this.HexView.Columns.Count; i++) {
+            Column column = this.HexView.Columns[i];
             if (column is not CellBasedColumn { IsVisible: true } cellBasedColumn)
                 continue;
 
-            var bounds = cellBasedColumn.GetCellBounds(line, Caret.Location);
-            if (Caret.Mode == EditingMode.Insert)
-                bounds = new Rect(bounds.Left, bounds.Top, InsertCaretWidth, bounds.Height);
+            Rect bounds = cellBasedColumn.GetCellBounds(line, this.Caret.Location);
+            if (this.Caret.Mode == EditingMode.Insert)
+                bounds = new Rect(bounds.Left, bounds.Top, this.InsertCaretWidth, bounds.Height);
 
-            if (i == Caret.PrimaryColumnIndex)
-            {
-                if (CaretVisible)
-                    context.DrawRectangle(PrimaryColumnBackground, PrimaryColumnBorder, bounds);
+            if (i == this.Caret.PrimaryColumnIndex) {
+                if (this.CaretVisible)
+                    context.DrawRectangle(this.PrimaryColumnBackground, this.PrimaryColumnBorder, bounds);
             }
-            else
-            {
-                context.DrawRectangle(SecondaryColumnBackground, SecondaryColumnBorder, bounds);
+            else {
+                context.DrawRectangle(this.SecondaryColumnBackground, this.SecondaryColumnBorder, bounds);
             }
         }
     }

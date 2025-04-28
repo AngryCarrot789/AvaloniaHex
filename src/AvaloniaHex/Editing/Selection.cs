@@ -6,8 +6,7 @@ namespace AvaloniaHex.Editing;
 /// <summary>
 /// Represents a selection within a hex editor.
 /// </summary>
-public class Selection
-{
+public class Selection {
     /// <summary>
     /// Fires when the selection range has changed.
     /// </summary>
@@ -15,9 +14,8 @@ public class Selection
 
     private BitRange _range;
 
-    internal Selection(HexView hexView)
-    {
-        HexView = hexView;
+    internal Selection(HexView hexView) {
+        this.HexView = hexView;
     }
 
     /// <summary>
@@ -28,35 +26,30 @@ public class Selection
     /// <summary>
     /// Gets or sets the range the selection spans.
     /// </summary>
-    public BitRange Range
-    {
-        get => _range;
-        set
-        {
-            value = HexView.Document is { } document
+    public BitRange Range {
+        get => this._range;
+        set {
+            value = this.HexView.Document is { } document
                 ? value.Clamp(document.ValidRanges.EnclosingRange)
                 : BitRange.Empty;
 
-            if (_range != value)
-            {
-                _range = value;
-                OnRangeChanged();
+            if (this._range != value) {
+                this._range = value;
+                this.OnRangeChanged();
             }
         }
     }
 
-    private void OnRangeChanged()
-    {
-        RangeChanged?.Invoke(this, EventArgs.Empty);
+    private void OnRangeChanged() {
+        this.RangeChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
     /// Selects the entire document.
     /// </summary>
-    public void SelectAll()
-    {
-        Range = HexView.Document is not null
-            ? new BitRange(0, HexView.Document.Length)
+    public void SelectAll() {
+        this.Range = this.HexView.Document is not null
+            ? new BitRange(0, this.HexView.Document.Length)
             : default;
     }
 }

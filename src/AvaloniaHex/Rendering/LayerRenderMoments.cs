@@ -4,8 +4,7 @@ namespace AvaloniaHex.Rendering;
 /// Provides members describing when a layer should be rendered.
 /// </summary>
 [Flags]
-public enum LayerRenderMoments
-{
+public enum LayerRenderMoments {
     /// <summary>
     /// Indicates the layer should only be rendered minimally.
     /// </summary>

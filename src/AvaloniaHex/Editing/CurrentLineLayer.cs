@@ -7,10 +7,8 @@ namespace AvaloniaHex.Editing;
 /// <summary>
 /// Renders a highlight on the current active visual line.
 /// </summary>
-public class CurrentLineLayer : Layer
-{
-    static CurrentLineLayer()
-    {
+public class CurrentLineLayer : Layer {
+    static CurrentLineLayer() {
         AffectsRender<CurrentLineLayer>(
             CurrentLineBackgroundProperty,
             CurrentLineBorderProperty
@@ -22,13 +20,12 @@ public class CurrentLineLayer : Layer
     /// </summary>
     /// <param name="caret">The cursor to follow.</param>
     /// <param name="selection">The selection to follow.</param>
-    public CurrentLineLayer(Caret caret, Selection selection)
-    {
-        Caret = caret;
-        Selection = selection;
+    public CurrentLineLayer(Caret caret, Selection selection) {
+        this.Caret = caret;
+        this.Selection = selection;
 
-        Caret.LocationChanged += OnCursorChanged;
-        Selection.RangeChanged += OnCursorChanged;
+        this.Caret.LocationChanged += this.OnCursorChanged;
+        this.Selection.RangeChanged += this.OnCursorChanged;
     }
 
     /// <inheritdoc />
@@ -56,10 +53,9 @@ public class CurrentLineLayer : Layer
     /// <summary>
     /// Gets or sets the brush used to draw the background of the cursor in the secondary columns.
     /// </summary>
-    public IPen? CurrentLineBorder
-    {
-        get => GetValue(CurrentLineBorderProperty);
-        set => SetValue(CurrentLineBorderProperty, value);
+    public IPen? CurrentLineBorder {
+        get => this.GetValue(CurrentLineBorderProperty);
+        set => this.SetValue(CurrentLineBorderProperty, value);
     }
 
     /// <summary>
@@ -74,30 +70,27 @@ public class CurrentLineLayer : Layer
     /// <summary>
     /// Gets or sets the brush used to draw the background of the cursor in the secondary columns.
     /// </summary>
-    public IBrush? CurrentLineBackground
-    {
-        get => GetValue(CurrentLineBackgroundProperty);
-        set => SetValue(CurrentLineBackgroundProperty, value);
+    public IBrush? CurrentLineBackground {
+        get => this.GetValue(CurrentLineBackgroundProperty);
+        set => this.SetValue(CurrentLineBackgroundProperty, value);
     }
 
-    private void OnCursorChanged(object? sender, EventArgs e)
-    {
-        InvalidateVisual();
+    private void OnCursorChanged(object? sender, EventArgs e) {
+        this.InvalidateVisual();
     }
 
     /// <inheritdoc />
-    public override void Render(DrawingContext context)
-    {
+    public override void Render(DrawingContext context) {
         base.Render(context);
 
-        if (HexView is null || !HexView.IsFocused)
+        if (this.HexView is null || !this.HexView.IsFocused)
             return;
 
-        var line = HexView.GetVisualLineByLocation(Caret.Location);
+        VisualBytesLine? line = this.HexView.GetVisualLineByLocation(this.Caret.Location);
         if (line is null)
             return;
 
-        if (Selection.Range.ByteLength <= 1)
-            context.DrawRectangle(CurrentLineBackground, CurrentLineBorder, line.Bounds);
+        if (this.Selection.Range.ByteLength <= 1)
+            context.DrawRectangle(this.CurrentLineBackground, this.CurrentLineBorder, line.Bounds);
     }
 }

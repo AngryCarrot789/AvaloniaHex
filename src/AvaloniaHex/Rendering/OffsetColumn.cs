@@ -6,17 +6,15 @@ namespace AvaloniaHex.Rendering;
 /// <summary>
 /// Represents the column rendering the line offsets.
 /// </summary>
-public class OffsetColumn : Column
-{
+public class OffsetColumn : Column {
     private Size _minimumSize;
 
-    static OffsetColumn()
-    {
+    static OffsetColumn() {
         IsUppercaseProperty.Changed.AddClassHandler<HexColumn, bool>(OnIsUpperCaseChanged);
     }
 
     /// <inheritdoc />
-    public override Size MinimumSize => _minimumSize;
+    public override Size MinimumSize => this._minimumSize;
 
     /// <summary>
     /// Defines the <see cref="IsUppercase"/> property.
@@ -27,51 +25,44 @@ public class OffsetColumn : Column
     /// <summary>
     /// Gets or sets a value indicating whether the hexadecimal digits should be rendered in uppercase or not.
     /// </summary>
-    public bool IsUppercase
-    {
-        get => GetValue(IsUppercaseProperty);
-        set => SetValue(IsUppercaseProperty, value);
+    public bool IsUppercase {
+        get => this.GetValue(IsUppercaseProperty);
+        set => this.SetValue(IsUppercaseProperty, value);
     }
 
-    private static void OnIsUpperCaseChanged(HexColumn arg1, AvaloniaPropertyChangedEventArgs<bool> arg2)
-    {
+    private static void OnIsUpperCaseChanged(HexColumn arg1, AvaloniaPropertyChangedEventArgs<bool> arg2) {
         arg1.HexView?.InvalidateVisualLines();
     }
 
     /// <inheritdoc />
-    public override void Measure()
-    {
-        if (HexView is null)
-        {
-            _minimumSize = default;
+    public override void Measure() {
+        if (this.HexView is null) {
+            this._minimumSize = default;
         }
-        else
-        {
-            var dummy = CreateTextLine("00000000:")!;
-            _minimumSize = new Size(dummy.Width, dummy.Height);
+        else {
+            TextLine dummy = this.CreateTextLine("00000000:")!;
+            this._minimumSize = new Size(dummy.Width, dummy.Height);
         }
     }
 
     /// <inheritdoc />
-    public override TextLine? CreateTextLine(VisualBytesLine line)
-    {
-        if (HexView is null)
+    public override TextLine? CreateTextLine(VisualBytesLine line) {
+        if (this.HexView is null)
             throw new InvalidOperationException();
 
         ulong offset = line.Range.Start.ByteIndex;
-        string text = IsUppercase
+        string text = this.IsUppercase
             ? $"{offset:X8}:"
             : $"{offset:x8}:";
 
-        return CreateTextLine(text);
+        return this.CreateTextLine(text);
     }
 
-    private TextLine? CreateTextLine(string text)
-    {
-        if (HexView is null)
+    private TextLine? CreateTextLine(string text) {
+        if (this.HexView is null)
             return null;
 
-        var properties = GetTextRunProperties();
+        GenericTextRunProperties properties = this.GetTextRunProperties();
         return TextFormatter.Current.FormatLine(
             new SimpleTextSource(text, properties),
             0,

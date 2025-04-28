@@ -14,8 +14,7 @@ namespace AvaloniaHex.Rendering;
 /// <summary>
 /// Provides a render target for binary data.
 /// </summary>
-public class HexView : Control, ILogicalScrollable
-{
+public class HexView : Control, ILogicalScrollable {
     /// <inheritdoc />
     public event EventHandler? ScrollInvalidated;
 
@@ -29,8 +28,7 @@ public class HexView : Control, ILogicalScrollable
     private Size _extent;
     private int _actualBytesPerLine;
 
-    static HexView()
-    {
+    static HexView() {
         FocusableProperty.OverrideDefaultValue<HexView>(true);
 
         TemplatedControl.FontFamilyProperty.Changed.AddClassHandler<HexView>(OnFontRelatedPropertyChanged);
@@ -48,19 +46,19 @@ public class HexView : Control, ILogicalScrollable
     /// <summary>
     /// Creates a new hex view control.
     /// </summary>
-    public HexView()
-    {
-        Columns = new ColumnCollection(this);
-        _visualLines = new VisualBytesLinesBuffer(this);
+    public HexView() {
+        this.Columns = new ColumnCollection(this);
+        this._visualLines = new VisualBytesLinesBuffer(this);
+        this.Focusable = true;
 
-        EnsureTextProperties();
+        this.EnsureTextProperties();
 
-        Layers = new LayerCollection(this)
-        {
+        this.Layers = new LayerCollection(this) {
             new ColumnBackgroundLayer(),
             new CellGroupsLayer(),
             new TextLayer()
-        };;
+        };
+        ;
     }
 
     /// <summary>
@@ -72,10 +70,9 @@ public class HexView : Control, ILogicalScrollable
     /// <summary>
     /// Gets or sets the binary document that is currently being displayed.
     /// </summary>
-    public IBinaryDocument? Document
-    {
-        get => GetValue(DocumentProperty);
-        set => SetValue(DocumentProperty, value);
+    public IBinaryDocument? Document {
+        get => this.GetValue(DocumentProperty);
+        set => this.SetValue(DocumentProperty, value);
     }
 
     /// <summary>
@@ -88,10 +85,9 @@ public class HexView : Control, ILogicalScrollable
     /// Gets or sets the fixed amount of bytes per line that should be displayed, or <c>null</c> if the number of
     /// bytes is proportional to the width of the control.
     /// </summary>
-    public int? BytesPerLine
-    {
-        get => GetValue(BytesPerLineProperty);
-        set => SetValue(BytesPerLineProperty, value);
+    public int? BytesPerLine {
+        get => this.GetValue(BytesPerLineProperty);
+        set => this.SetValue(BytesPerLineProperty, value);
     }
 
     /// <summary>
@@ -103,13 +99,11 @@ public class HexView : Control, ILogicalScrollable
     /// <summary>
     /// Gets the total amount of bytes per line that are displayed in the control.
     /// </summary>
-    public int ActualBytesPerLine
-    {
-        get => _actualBytesPerLine;
-        private set
-        {
-            if (SetAndRaise(ActualBytesPerLineProperty, ref _actualBytesPerLine, value))
-                InvalidateVisualLines();
+    public int ActualBytesPerLine {
+        get => this._actualBytesPerLine;
+        private set {
+            if (this.SetAndRaise(ActualBytesPerLineProperty, ref this._actualBytesPerLine, value))
+                this.InvalidateVisualLines();
         }
     }
 
@@ -122,8 +116,7 @@ public class HexView : Control, ILogicalScrollable
     /// <summary>
     /// Gets the columns displayed in the hex view.
     /// </summary>
-    public ColumnCollection Columns
-    {
+    public ColumnCollection Columns {
         get;
     }
 
@@ -136,35 +129,31 @@ public class HexView : Control, ILogicalScrollable
     /// <summary>
     /// Gets the amount of spacing in between columns.
     /// </summary>
-    public double ColumnPadding
-    {
-        get => GetValue(ColumnPaddingProperty);
-        set => SetValue(ColumnPaddingProperty, value);
+    public double ColumnPadding {
+        get => this.GetValue(ColumnPaddingProperty);
+        set => this.SetValue(ColumnPaddingProperty, value);
     }
 
     /// <summary>
     /// Gets the font family that is used for rendering the text in the hex view.
     /// </summary>
-    public FontFamily FontFamily
-    {
-        get => GetValue(TemplatedControl.FontFamilyProperty);
-        set => SetValue(TemplatedControl.FontFamilyProperty, value);
+    public FontFamily FontFamily {
+        get => this.GetValue(TemplatedControl.FontFamilyProperty);
+        set => this.SetValue(TemplatedControl.FontFamilyProperty, value);
     }
 
     /// <summary>
     /// Gets the font size that is used for rendering the text in the hex view.
     /// </summary>
-    public double FontSize
-    {
-        get => GetValue(TemplatedControl.FontSizeProperty);
-        set => SetValue(TemplatedControl.FontSizeProperty, value);
+    public double FontSize {
+        get => this.GetValue(TemplatedControl.FontSizeProperty);
+        set => this.SetValue(TemplatedControl.FontSizeProperty, value);
     }
 
     /// <summary>
     /// Gets the typeface that is used for rendering the text in the hex view.
     /// </summary>
-    public Typeface Typeface
-    {
+    public Typeface Typeface {
         get;
         private set;
     }
@@ -172,17 +161,15 @@ public class HexView : Control, ILogicalScrollable
     /// <summary>
     /// Gets the base foreground brush that is used for rendering the text in the hex view.
     /// </summary>
-    public IBrush? Foreground
-    {
-        get => GetValue(TemplatedControl.ForegroundProperty);
-        set => SetValue(TemplatedControl.ForegroundProperty, value);
+    public IBrush? Foreground {
+        get => this.GetValue(TemplatedControl.ForegroundProperty);
+        set => this.SetValue(TemplatedControl.ForegroundProperty, value);
     }
 
     /// <summary>
     /// Gets the text run properties that are used for rendering the text in the hex view.
     /// </summary>
-    public GenericTextRunProperties TextRunProperties
-    {
+    public GenericTextRunProperties TextRunProperties {
         get;
         private set;
     }
@@ -190,7 +177,7 @@ public class HexView : Control, ILogicalScrollable
     /// <summary>
     /// Gets the current lines that are visible.
     /// </summary>
-    public IReadOnlyList<VisualBytesLine> VisualLines => _visualLines;
+    public IReadOnlyList<VisualBytesLine> VisualLines => this._visualLines;
 
     /// <summary>
     /// Gets a collection of line transformers that are applied to each line in the hex view.
@@ -203,14 +190,11 @@ public class HexView : Control, ILogicalScrollable
     public LayerCollection Layers { get; }
 
     /// <inheritdoc />
-    public Size Extent
-    {
-        get => _extent;
-        private set
-        {
-            if (_extent != value)
-            {
-                _extent = value;
+    public Size Extent {
+        get => this._extent;
+        private set {
+            if (this._extent != value) {
+                this._extent = value;
                 ((ILogicalScrollable) this).RaiseScrollInvalidated(EventArgs.Empty);
             }
         }
@@ -219,22 +203,19 @@ public class HexView : Control, ILogicalScrollable
     /// <summary>
     /// Gets or sets the current scroll offset.
     /// </summary>
-    public Vector ScrollOffset
-    {
-        get => _scrollOffset;
-        set
-        {
-            _scrollOffset = value;
-            InvalidateArrange();
+    public Vector ScrollOffset {
+        get => this._scrollOffset;
+        set {
+            this._scrollOffset = value;
+            this.InvalidateArrange();
             ((ILogicalScrollable) this).RaiseScrollInvalidated(EventArgs.Empty);
         }
     }
 
     /// <inheritdoc />
-    Vector IScrollable.Offset
-    {
-        get => ScrollOffset;
-        set => ScrollOffset = value;
+    Vector IScrollable.Offset {
+        get => this.ScrollOffset;
+        set => this.ScrollOffset = value;
     }
 
     Size IScrollable.Viewport => new(0, 1);
@@ -249,7 +230,7 @@ public class HexView : Control, ILogicalScrollable
     public Size ScrollSize => new(0, 1);
 
     /// <inheritdoc />
-    public Size PageScrollSize => new(0, VisualLines.Count);
+    public Size PageScrollSize => new(0, this.VisualLines.Count);
 
     /// <summary>
     /// Gets the binary range that is currently visible in the view.
@@ -265,100 +246,89 @@ public class HexView : Control, ILogicalScrollable
     /// Invalidates the line that includes the provided location.
     /// </summary>
     /// <param name="location">The location.</param>
-    public void InvalidateVisualLine(BitLocation location)
-    {
-        var line = GetVisualLineByLocation(location);
+    public void InvalidateVisualLine(BitLocation location) {
+        VisualBytesLine? line = this.GetVisualLineByLocation(location);
         if (line is not null)
-            InvalidateVisualLine(line);
+            this.InvalidateVisualLine(line);
     }
 
     /// <summary>
     /// Schedules a repaint of the provided visual line.
     /// </summary>
     /// <param name="line"></param>
-    public void InvalidateVisualLine(VisualBytesLine line)
-    {
+    public void InvalidateVisualLine(VisualBytesLine line) {
         line.Invalidate();
-        InvalidateArrange();
+        this.InvalidateArrange();
 
-        for (int i = 0; i < Layers.Count; i++)
-        {
-            if ((Layers[i].UpdateMoments & LayerRenderMoments.LineInvalidate) != 0)
-                Layers[i].InvalidateVisual();
+        for (int i = 0; i < this.Layers.Count; i++) {
+            if ((this.Layers[i].UpdateMoments & LayerRenderMoments.LineInvalidate) != 0)
+                this.Layers[i].InvalidateVisual();
         }
     }
 
     /// <summary>
     /// Clears out all visual lines and schedules a new layout pass.
     /// </summary>
-    public void InvalidateVisualLines()
-    {
-        _visualLines.Clear();
-        InvalidateArrange();
+    public void InvalidateVisualLines() {
+        this._visualLines.Clear();
+        this.InvalidateArrange();
     }
 
     /// <summary>
     /// Invalidates the lines that contain the bits in the provided range.
     /// </summary>
     /// <param name="range">The range to invalidate.</param>
-    public void InvalidateVisualLines(BitRange range)
-    {
-        if (!VisibleRange.OverlapsWith(range))
+    public void InvalidateVisualLines(BitRange range) {
+        if (!this.VisibleRange.OverlapsWith(range))
             return;
 
-        foreach (var line in GetVisualLinesByRange(range))
+        foreach (VisualBytesLine line in this.GetVisualLinesByRange(range))
             line.Invalidate();
 
-        for (int i = 0; i < Layers.Count; i++)
-        {
-            if ((Layers[i].UpdateMoments & LayerRenderMoments.LineInvalidate) != 0)
-                Layers[i].InvalidateVisual();
+        for (int i = 0; i < this.Layers.Count; i++) {
+            if ((this.Layers[i].UpdateMoments & LayerRenderMoments.LineInvalidate) != 0)
+                this.Layers[i].InvalidateVisual();
         }
 
-        InvalidateArrange();
+        this.InvalidateArrange();
     }
 
     /// <inheritdoc />
-    protected override Size MeasureOverride(Size availableSize)
-    {
-        for (int i = 0; i < Columns.Count; i++)
-            Columns[i].Measure();
+    protected override Size MeasureOverride(Size availableSize) {
+        for (int i = 0; i < this.Columns.Count; i++)
+            this.Columns[i].Measure();
 
-        for (int i = 0; i < Layers.Count; i++)
-            Layers[i].Measure(availableSize);
+        for (int i = 0; i < this.Layers.Count; i++)
+            this.Layers[i].Measure(availableSize);
 
         return base.MeasureOverride(availableSize);
     }
 
     /// <inheritdoc />
-    protected override Size ArrangeOverride(Size finalSize)
-    {
-        ComputeBytesPerLine(finalSize);
-        UpdateColumnBounds();
-        UpdateVisualLines(finalSize);
+    protected override Size ArrangeOverride(Size finalSize) {
+        this.ComputeBytesPerLine(finalSize);
+        this.UpdateColumnBounds();
+        this.UpdateVisualLines(finalSize);
 
-        Extent = Document is not null
-            ? new Size(0, Math.Ceiling((double) Document.Length / ActualBytesPerLine))
+        this.Extent = this.Document is not null
+            ? new Size(0, Math.Ceiling((double) this.Document.Length / this.ActualBytesPerLine))
             : default;
 
-        bool hasResized = finalSize != Bounds.Size;
+        bool hasResized = finalSize != this.Bounds.Size;
 
-        for (int i = 0; i < Layers.Count; i++)
-        {
-            Layers[i].Arrange(new Rect(new Point(0, 0), finalSize));
+        for (int i = 0; i < this.Layers.Count; i++) {
+            this.Layers[i].Arrange(new Rect(new Point(0, 0), finalSize));
 
-            if (hasResized || (Layers[i].UpdateMoments & LayerRenderMoments.NoResizeRearrange) != 0)
-                Layers[i].InvalidateVisual();
+            if (hasResized || (this.Layers[i].UpdateMoments & LayerRenderMoments.NoResizeRearrange) != 0)
+                this.Layers[i].InvalidateVisual();
         }
 
         return base.ArrangeOverride(finalSize);
     }
 
-    private void ComputeBytesPerLine(Size finalSize)
-    {
-        if (BytesPerLine is { } bytesPerLine)
-        {
-            ActualBytesPerLine = bytesPerLine;
+    private void ComputeBytesPerLine(Size finalSize) {
+        if (this.BytesPerLine is { } bytesPerLine) {
+            this.ActualBytesPerLine = bytesPerLine;
             return;
         }
 
@@ -374,87 +344,77 @@ public class HexView : Control, ILogicalScrollable
         double wordWidth = 0;
         double wordPadding = 0;
 
-        for (int i = 0; i < Columns.Count; i++)
-        {
-            var column = Columns[i];
+        for (int i = 0; i < this.Columns.Count; i++) {
+            Column column = this.Columns[i];
             if (!column.IsVisible)
                 continue;
 
             minimumWidth += column.MinimumSize.Width;
             if (i > 0)
-                minimumWidth += ColumnPadding;
+                minimumWidth += this.ColumnPadding;
 
-            if (column is CellBasedColumn x)
-            {
+            if (column is CellBasedColumn x) {
                 wordWidth += x.WordWidth;
                 wordPadding += x.GroupPadding;
             }
         }
 
         int count = (int) ((finalSize.Width - minimumWidth + wordPadding) / (wordWidth + wordPadding));
-        ActualBytesPerLine = wordWidth != 0
+        this.ActualBytesPerLine = wordWidth != 0
             ? Math.Max(1, count)
             : 16;
     }
 
-    private void UpdateColumnBounds()
-    {
+    private void UpdateColumnBounds() {
         double currentX = 0;
-        foreach (var column in Columns)
-        {
-            if (!column.IsVisible)
-            {
+        foreach (Column column in this.Columns) {
+            if (!column.IsVisible) {
                 column.SetBounds(default);
             }
-            else
-            {
+            else {
                 double width = column.Width;
-                column.SetBounds(new Rect(currentX, 0, width, Bounds.Height));
-                currentX += width + ColumnPadding;
+                column.SetBounds(new Rect(currentX, 0, width, this.Bounds.Height));
+                currentX += width + this.ColumnPadding;
             }
         }
     }
 
-    private void UpdateVisualLines(Size finalSize)
-    {
+    private void UpdateVisualLines(Size finalSize) {
         // No columns or no document means we need a completely empty control.
-        if (Columns.Count == 0 || Document is null)
-        {
-            _visualLines.Clear();
+        if (this.Columns.Count == 0 || this.Document is null) {
+            this._visualLines.Clear();
 
-            VisibleRange = default;
-            FullyVisibleRange = default;
+            this.VisibleRange = default;
+            this.FullyVisibleRange = default;
             return;
         }
 
         // In case of an empty document, always ensure that there's at least one (empty) line rendered.
-        if (Document.Length == 0)
-        {
-            _visualLines.Clear();
+        if (this.Document.Length == 0) {
+            this._visualLines.Clear();
 
-            var line = _visualLines.GetOrCreateVisualLine(new BitRange(0, 1));
+            VisualBytesLine line = this._visualLines.GetOrCreateVisualLine(new BitRange(0, 1));
 
             line.EnsureIsValid();
             line.Bounds = new Rect(0, 0, finalSize.Width, line.GetRequiredHeight());
 
-            VisibleRange = line.VirtualRange;
-            FullyVisibleRange = VisibleRange;
+            this.VisibleRange = line.VirtualRange;
+            this.FullyVisibleRange = this.VisibleRange;
             return;
         }
 
         // Otherwise, ensure all visible lines are created.
 
-        var startLocation = new BitLocation((ulong) ScrollOffset.Y * (ulong) ActualBytesPerLine);
+        BitLocation startLocation = new BitLocation((ulong) this.ScrollOffset.Y * (ulong) this.ActualBytesPerLine);
 
-        var currentRange = new BitRange(startLocation, startLocation);
+        BitRange currentRange = new BitRange(startLocation, startLocation);
 
         double currentY = 0;
-        while (currentY < finalSize.Height && currentRange.End.ByteIndex <= Document.Length)
-        {
+        while (currentY < finalSize.Height && currentRange.End.ByteIndex <= this.Document.Length) {
             // Get/create next visual line.
-            var line = _visualLines.GetOrCreateVisualLine(new BitRange(
+            VisualBytesLine line = this._visualLines.GetOrCreateVisualLine(new BitRange(
                 currentRange.End.ByteIndex,
-                Math.Min(Document.Length + 1, currentRange.End.ByteIndex + (ulong) ActualBytesPerLine)
+                Math.Min(this.Document.Length + 1, currentRange.End.ByteIndex + (ulong) this.ActualBytesPerLine)
             ));
 
             line.EnsureIsValid();
@@ -466,25 +426,22 @@ public class HexView : Control, ILogicalScrollable
         }
 
         // Compute full visible range (including lines that are only slightly visible).
-        VisibleRange = _visualLines.Count == 0
-            ? new BitRange(Document.Length, Document.Length)
+        this.VisibleRange = this._visualLines.Count == 0
+            ? new BitRange(this.Document.Length, this.Document.Length)
             : new BitRange(startLocation, currentRange.End);
 
         // Get fully visible byte range.
-        if (_visualLines.Count == 0 || !(_visualLines[^1].Bounds.Bottom > finalSize.Height))
-        {
-            FullyVisibleRange = VisibleRange;
+        if (this._visualLines.Count == 0 || !(this._visualLines[^1].Bounds.Bottom > finalSize.Height)) {
+            this.FullyVisibleRange = this.VisibleRange;
         }
-        else
-        {
-            FullyVisibleRange = new BitRange(
-                VisibleRange.Start,
-                new BitLocation(VisibleRange.End.ByteIndex - (ulong) ActualBytesPerLine, 0)
+        else {
+            this.FullyVisibleRange = new BitRange(this.VisibleRange.Start,
+                new BitLocation(this.VisibleRange.End.ByteIndex - (ulong) this.ActualBytesPerLine, 0)
             );
         }
 
         // Cut off excess visual lines.
-        _visualLines.RemoveOutsideOfRange(VisibleRange);
+        this._visualLines.RemoveOutsideOfRange(this.VisibleRange);
     }
 
     /// <summary>
@@ -492,12 +449,11 @@ public class HexView : Control, ILogicalScrollable
     /// </summary>
     /// <param name="location">The location</param>
     /// <returns>The line, or <c>null</c> if the location is currently not visible.</returns>
-    public VisualBytesLine? GetVisualLineByLocation(BitLocation location)
-    {
-        if (!VisibleRange.Contains(location))
+    public VisualBytesLine? GetVisualLineByLocation(BitLocation location) {
+        if (!this.VisibleRange.Contains(location))
             return null;
 
-        return _visualLines.GetVisualLineByLocation(location);
+        return this._visualLines.GetVisualLineByLocation(location);
     }
 
     /// <summary>
@@ -505,12 +461,11 @@ public class HexView : Control, ILogicalScrollable
     /// </summary>
     /// <param name="range">The range.</param>
     /// <returns>The lines.</returns>
-    public IEnumerable<VisualBytesLine> GetVisualLinesByRange(BitRange range)
-    {
-        if (!VisibleRange.OverlapsWith(range))
+    public IEnumerable<VisualBytesLine> GetVisualLinesByRange(BitRange range) {
+        if (!this.VisibleRange.OverlapsWith(range))
             return [];
 
-        return _visualLines.GetVisualLinesByRange(range);
+        return this._visualLines.GetVisualLinesByRange(range);
     }
 
     /// <summary>
@@ -518,11 +473,9 @@ public class HexView : Control, ILogicalScrollable
     /// </summary>
     /// <param name="point">The point</param>
     /// <returns>The line, or <c>null</c> if the location is currently not visible.</returns>
-    public VisualBytesLine? GetVisualLineByPoint(Point point)
-    {
-        for (int i = 0; i < VisualLines.Count; i++)
-        {
-            var line = VisualLines[i];
+    public VisualBytesLine? GetVisualLineByPoint(Point point) {
+        for (int i = 0; i < this.VisualLines.Count; i++) {
+            VisualBytesLine line = this.VisualLines[i];
             if (line.Bounds.Contains(point))
                 return line;
         }
@@ -535,10 +488,8 @@ public class HexView : Control, ILogicalScrollable
     /// </summary>
     /// <param name="point">The point.</param>
     /// <returns>The point, or <c>null</c> if the location does not fall inside of a column.</returns>
-    public Column? GetColumnByPoint(Point point)
-    {
-        foreach (var column in Columns)
-        {
+    public Column? GetColumnByPoint(Point point) {
+        foreach (Column column in this.Columns) {
             if (column.IsVisible && column.Bounds.Contains(point))
                 return column;
         }
@@ -551,12 +502,11 @@ public class HexView : Control, ILogicalScrollable
     /// </summary>
     /// <param name="point">The point.</param>
     /// <returns>The location of the cell, or <c>null</c> if no cell is under the provided point.</returns>
-    public BitLocation? GetLocationByPoint(Point point)
-    {
-        if (GetColumnByPoint(point) is not CellBasedColumn column)
+    public BitLocation? GetLocationByPoint(Point point) {
+        if (this.GetColumnByPoint(point) is not CellBasedColumn column)
             return null;
 
-        return GetLocationByPoint(point, column);
+        return this.GetLocationByPoint(point, column);
     }
 
     /// <summary>
@@ -565,9 +515,8 @@ public class HexView : Control, ILogicalScrollable
     /// <param name="point">The point.</param>
     /// <param name="column">The column</param>
     /// <returns>The location of the cell, or <c>null</c> if no cell is under the provided point.</returns>
-    public BitLocation? GetLocationByPoint(Point point, CellBasedColumn column)
-    {
-        if (GetVisualLineByPoint(point) is not { } line)
+    public BitLocation? GetLocationByPoint(Point point, CellBasedColumn column) {
+        if (this.GetVisualLineByPoint(point) is not { } line)
             return null;
 
         return column.GetLocationByPoint(line, point);
@@ -578,33 +527,29 @@ public class HexView : Control, ILogicalScrollable
     /// </summary>
     /// <param name="location">The location to scroll to.</param>
     /// <returns><c>true</c> if the scroll offset has changed, <c>false</c> otherwise.</returns>
-    public bool BringIntoView(BitLocation location)
-    {
-        if (location.ByteIndex >= Document?.Length + 1 || FullyVisibleRange.Contains(location) || ActualBytesPerLine == 0)
+    public bool BringIntoView(BitLocation location) {
+        if (location.ByteIndex >= this.Document?.Length + 1 || this.FullyVisibleRange.Contains(location) || this.ActualBytesPerLine == 0)
             return false;
 
-        ulong firstLineIndex = FullyVisibleRange.Start.ByteIndex / (ulong) ActualBytesPerLine;
-        ulong lastLineIndex = (FullyVisibleRange.End.ByteIndex - 1) / (ulong) ActualBytesPerLine;
-        ulong targetLineIndex = location.ByteIndex / (ulong) ActualBytesPerLine;
+        ulong firstLineIndex = this.FullyVisibleRange.Start.ByteIndex / (ulong) this.ActualBytesPerLine;
+        ulong lastLineIndex = (this.FullyVisibleRange.End.ByteIndex - 1) / (ulong) this.ActualBytesPerLine;
+        ulong targetLineIndex = location.ByteIndex / (ulong) this.ActualBytesPerLine;
 
         ulong newIndex;
 
-        if (location > FullyVisibleRange.End)
-        {
+        if (location > this.FullyVisibleRange.End) {
             ulong difference = targetLineIndex - lastLineIndex;
             newIndex = firstLineIndex + difference;
         }
-        else  if (location < FullyVisibleRange.Start)
-        {
+        else if (location < this.FullyVisibleRange.Start) {
             ulong difference = firstLineIndex - targetLineIndex;
             newIndex = firstLineIndex - difference;
         }
-        else
-        {
+        else {
             return false;
         }
 
-        ScrollOffset = new Vector(0, newIndex);
+        this.ScrollOffset = new Vector(0, newIndex);
 
         return true;
     }
@@ -613,18 +558,17 @@ public class HexView : Control, ILogicalScrollable
 
     Control? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, Control? from) => null;
 
-    void ILogicalScrollable.RaiseScrollInvalidated(EventArgs e) => ScrollInvalidated?.Invoke(this, e);
+    void ILogicalScrollable.RaiseScrollInvalidated(EventArgs e) => this.ScrollInvalidated?.Invoke(this, e);
 
-    private static void OnDocumentChanged(HexView view, AvaloniaPropertyChangedEventArgs arg2)
-    {
+    private static void OnDocumentChanged(HexView view, AvaloniaPropertyChangedEventArgs arg2) {
         view._scrollOffset = default;
         view.InvalidateVisualLines();
 
-        var oldDocument = (IBinaryDocument?) arg2.OldValue;
+        IBinaryDocument? oldDocument = (IBinaryDocument?) arg2.OldValue;
         if (oldDocument is not null)
             oldDocument.Changed -= view.DocumentOnChanged;
 
-        var newDocument = (IBinaryDocument?) arg2.NewValue;
+        IBinaryDocument? newDocument = (IBinaryDocument?) arg2.NewValue;
         if (newDocument is not null)
             newDocument.Changed += view.DocumentOnChanged;
 
@@ -634,21 +578,16 @@ public class HexView : Control, ILogicalScrollable
         ));
     }
 
-    private void DocumentOnChanged(object? sender, BinaryDocumentChange e)
-    {
-        switch (e.Type)
-        {
-            case BinaryDocumentChangeType.Modify:
-                InvalidateVisualLines(e.AffectedRange);
-                break;
+    private void DocumentOnChanged(object? sender, BinaryDocumentChange e) {
+        switch (e.Type) {
+            case BinaryDocumentChangeType.Modify: this.InvalidateVisualLines(e.AffectedRange); break;
 
             case BinaryDocumentChangeType.Insert:
             case BinaryDocumentChangeType.Remove:
-                InvalidateVisualLines(e.AffectedRange.ExtendTo(Document!.ValidRanges.EnclosingRange.End));
-                break;
+                this.InvalidateVisualLines(e.AffectedRange.ExtendTo(this.Document!.ValidRanges.EnclosingRange.End));
+            break;
 
-            default:
-                throw new ArgumentOutOfRangeException();
+            default: throw new ArgumentOutOfRangeException();
         }
     }
 
@@ -656,41 +595,35 @@ public class HexView : Control, ILogicalScrollable
     /// Fires the <see cref="DocumentChanged"/> event.
     /// </summary>
     /// <param name="e">The arguments describing the event.</param>
-    protected virtual void OnDocumentChanged(DocumentChangedEventArgs e)
-    {
-        DocumentChanged?.Invoke(this, e);
+    protected virtual void OnDocumentChanged(DocumentChangedEventArgs e) {
+        this.DocumentChanged?.Invoke(this, e);
     }
 
-    private static void OnFontRelatedPropertyChanged(HexView arg1, AvaloniaPropertyChangedEventArgs arg2)
-    {
+    private static void OnFontRelatedPropertyChanged(HexView arg1, AvaloniaPropertyChangedEventArgs arg2) {
         arg1.EnsureTextProperties();
         arg1.InvalidateMeasure();
         arg1.InvalidateVisualLines();
     }
 
     [MemberNotNull(nameof(TextRunProperties))]
-    private void EnsureTextProperties()
-    {
-        if (Typeface.FontFamily != FontFamily)
-            Typeface = new Typeface(FontFamily);
+    private void EnsureTextProperties() {
+        if (this.Typeface.FontFamily != this.FontFamily)
+            this.Typeface = new Typeface(this.FontFamily);
 
-        TextRunProperties = new GenericTextRunProperties(
-            Typeface,
-            fontRenderingEmSize: FontSize,
-            foregroundBrush: Foreground
+        this.TextRunProperties = new GenericTextRunProperties(this.Typeface,
+            fontRenderingEmSize: this.FontSize,
+            foregroundBrush: this.Foreground
         );
     }
 
     /// <summary>
     /// Represents a collection of layers in a hex view.
     /// </summary>
-    public sealed class LayerCollection : ObservableCollection<Layer>
-    {
+    public sealed class LayerCollection : ObservableCollection<Layer> {
         private readonly HexView _owner;
 
-        internal LayerCollection(HexView owner)
-        {
-            _owner = owner;
+        internal LayerCollection(HexView owner) {
+            this._owner = owner;
         }
 
         /// <summary>
@@ -699,9 +632,8 @@ public class HexView : Control, ILogicalScrollable
         /// <typeparam name="TLayer">The layer type.</typeparam>
         /// <returns>The layer.</returns>
         public TLayer Get<TLayer>()
-            where TLayer : Layer
-        {
-            return Items.OfType<TLayer>().First();
+            where TLayer : Layer {
+            return this.Items.OfType<TLayer>().First();
         }
 
         /// <summary>
@@ -710,9 +642,8 @@ public class HexView : Control, ILogicalScrollable
         /// <typeparam name="TLayer">The layer type.</typeparam>
         /// <returns>The layer, or <c>null</c> if no layer of the provided type exists in the collection.</returns>
         public TLayer? GetOrDefault<TLayer>()
-            where TLayer : Layer
-        {
-            return Items.OfType<TLayer>().FirstOrDefault();
+            where TLayer : Layer {
+            return this.Items.OfType<TLayer>().FirstOrDefault();
         }
 
         /// <summary>
@@ -721,11 +652,9 @@ public class HexView : Control, ILogicalScrollable
         /// <typeparam name="TLayer">The type of the layer.</typeparam>
         /// <returns>The index, or <c>-1</c> if the layer is not present in the collection.</returns>
         public int IndexOf<TLayer>()
-            where TLayer : Layer
-        {
-            for (int i = 0; i < Count; i++)
-            {
-                if (Items[i] is TLayer)
+            where TLayer : Layer {
+            for (int i = 0; i < this.Count; i++) {
+                if (this.Items[i] is TLayer)
                     return i;
             }
 
@@ -738,13 +667,12 @@ public class HexView : Control, ILogicalScrollable
         /// <param name="layer">The layer to insert.</param>
         /// <typeparam name="TLayer">The type of layer to insert before.</typeparam>
         public void InsertBefore<TLayer>(Layer layer)
-            where TLayer : Layer
-        {
-            int index = IndexOf<TLayer>();
+            where TLayer : Layer {
+            int index = this.IndexOf<TLayer>();
             if (index == -1)
-                Insert(0, layer);
+                this.Insert(0, layer);
             else
-                Insert(index, layer);
+                this.Insert(index, layer);
         }
 
         /// <summary>
@@ -753,62 +681,55 @@ public class HexView : Control, ILogicalScrollable
         /// <param name="layer">The layer to insert.</param>
         /// <typeparam name="TLayer">The type of layer to insert after.</typeparam>
         public void InsertAfter<TLayer>(Layer layer)
-            where TLayer : Layer
-        {
-            int index = IndexOf<TLayer>();
+            where TLayer : Layer {
+            int index = this.IndexOf<TLayer>();
             if (index == -1)
-                Add(layer);
+                this.Add(layer);
             else
-                Insert(index + 1, layer);
+                this.Insert(index + 1, layer);
         }
 
-        private static void AssertNoOwner(Layer item)
-        {
+        private static void AssertNoOwner(Layer item) {
             if (item.HexView is not null)
                 throw new InvalidOperationException("Layer is already added to another hex view.");
         }
 
         /// <inheritdoc />
-        protected override void InsertItem(int index, Layer item)
-        {
+        protected override void InsertItem(int index, Layer item) {
             AssertNoOwner(item);
-            item.HexView = _owner;
-            _owner.LogicalChildren.Insert(index + _owner.Columns.Count, item);
-            _owner.VisualChildren.Insert(index, item);
+            item.HexView = this._owner;
+            this._owner.LogicalChildren.Insert(index + this._owner.Columns.Count, item);
+            this._owner.VisualChildren.Insert(index, item);
             base.InsertItem(index, item);
         }
 
         /// <inheritdoc />
-        protected override void RemoveItem(int index)
-        {
-            var item = Items[index];
+        protected override void RemoveItem(int index) {
+            Layer item = this.Items[index];
 
             item.HexView = null;
-            _owner.LogicalChildren.Remove(item);
-            _owner.VisualChildren.Remove(item);
+            this._owner.LogicalChildren.Remove(item);
+            this._owner.VisualChildren.Remove(item);
 
             base.RemoveItem(index);
         }
 
         /// <inheritdoc />
-        protected override void SetItem(int index, Layer item)
-        {
-            Items[index].HexView = null;
-            item.HexView = _owner;
+        protected override void SetItem(int index, Layer item) {
+            this.Items[index].HexView = null;
+            item.HexView = this._owner;
             base.SetItem(index, item);
 
-            _owner.LogicalChildren[index + _owner.Columns.Count] = item;
-            _owner.VisualChildren[index] = item;
+            this._owner.LogicalChildren[index + this._owner.Columns.Count] = item;
+            this._owner.VisualChildren[index] = item;
         }
 
         /// <inheritdoc />
-        protected override void ClearItems()
-        {
-            foreach (var item in Items)
-            {
+        protected override void ClearItems() {
+            foreach (Layer item in this.Items) {
                 item.HexView = null;
-                _owner.LogicalChildren.Remove(item);
-                _owner.VisualChildren.Remove(item);
+                this._owner.LogicalChildren.Remove(item);
+                this._owner.VisualChildren.Remove(item);
             }
 
             base.ClearItems();
@@ -818,13 +739,11 @@ public class HexView : Control, ILogicalScrollable
     /// <summary>
     /// Represents a collection of columns that are added to a hex view.
     /// </summary>
-    public class ColumnCollection : ObservableCollection<Column>
-    {
+    public class ColumnCollection : ObservableCollection<Column> {
         private readonly HexView _owner;
 
-        internal ColumnCollection(HexView owner)
-        {
-            _owner = owner;
+        internal ColumnCollection(HexView owner) {
+            this._owner = owner;
         }
 
         /// <summary>
@@ -833,9 +752,8 @@ public class HexView : Control, ILogicalScrollable
         /// <typeparam name="TColumn">The column type.</typeparam>
         /// <returns>The column.</returns>
         public TColumn Get<TColumn>()
-            where TColumn : Column
-        {
-            return Items.OfType<TColumn>().First();
+            where TColumn : Column {
+            return this.Items.OfType<TColumn>().First();
         }
 
         /// <summary>
@@ -844,9 +762,8 @@ public class HexView : Control, ILogicalScrollable
         /// <typeparam name="TColumn">The column type.</typeparam>
         /// <returns>The column, or <c>null</c> if no column of the provided type exists in the collection.</returns>
         public TColumn? GetOrDefault<TColumn>()
-            where TColumn : Column
-        {
-            return Items.OfType<TColumn>().FirstOrDefault();
+            where TColumn : Column {
+            return this.Items.OfType<TColumn>().FirstOrDefault();
         }
 
         /// <summary>
@@ -855,11 +772,9 @@ public class HexView : Control, ILogicalScrollable
         /// <typeparam name="TColumn">The type of the column.</typeparam>
         /// <returns>The index, or <c>-1</c> if the column is not present in the collection.</returns>
         public int IndexOf<TColumn>()
-            where TColumn : Column
-        {
-            for (int i = 0; i < Count; i++)
-            {
-                if (Items[i] is TColumn)
+            where TColumn : Column {
+            for (int i = 0; i < this.Count; i++) {
+                if (this.Items[i] is TColumn)
                     return i;
             }
 
@@ -872,13 +787,12 @@ public class HexView : Control, ILogicalScrollable
         /// <param name="column">The column to insert.</param>
         /// <typeparam name="TColumn">The type of column to insert before.</typeparam>
         public void InsertBefore<TColumn>(Column column)
-            where TColumn : Column
-        {
-            int index = IndexOf<TColumn>();
+            where TColumn : Column {
+            int index = this.IndexOf<TColumn>();
             if (index == -1)
-                Insert(0, column);
+                this.Insert(0, column);
             else
-                Insert(index, column);
+                this.Insert(index, column);
         }
 
         /// <summary>
@@ -887,56 +801,49 @@ public class HexView : Control, ILogicalScrollable
         /// <param name="column">The column to insert.</param>
         /// <typeparam name="TColumn">The type of column to insert after.</typeparam>
         public void InsertAfter<TColumn>(Column column)
-            where TColumn : Column
-        {
-            int index = IndexOf<TColumn>();
+            where TColumn : Column {
+            int index = this.IndexOf<TColumn>();
             if (index == -1)
-                Add(column);
+                this.Add(column);
             else
-                Insert(index + 1, column);
+                this.Insert(index + 1, column);
         }
 
-        private static void AssertNoOwner(Column column)
-        {
+        private static void AssertNoOwner(Column column) {
             if (column.HexView is not null)
                 throw new ArgumentException("Column is already added to another hex view.");
         }
 
         /// <inheritdoc />
-        protected override void InsertItem(int index, Column item)
-        {
+        protected override void InsertItem(int index, Column item) {
             AssertNoOwner(item);
             base.InsertItem(index, item);
-            item.HexView = _owner;
-            _owner.LogicalChildren.Insert(index, item);
+            item.HexView = this._owner;
+            this._owner.LogicalChildren.Insert(index, item);
         }
 
         /// <inheritdoc />
-        protected override void SetItem(int index, Column item)
-        {
+        protected override void SetItem(int index, Column item) {
             AssertNoOwner(item);
 
-            Items[index].HexView = null;
+            this.Items[index].HexView = null;
             base.SetItem(index, item);
-            item.HexView = _owner;
-            _owner.LogicalChildren[index] = item;
+            item.HexView = this._owner;
+            this._owner.LogicalChildren[index] = item;
         }
 
         /// <inheritdoc />
-        protected override void RemoveItem(int index)
-        {
-            Items[index].HexView = null;
+        protected override void RemoveItem(int index) {
+            this.Items[index].HexView = null;
             base.RemoveItem(index);
-            _owner.LogicalChildren.RemoveAt(index);
+            this._owner.LogicalChildren.RemoveAt(index);
         }
 
         /// <inheritdoc />
-        protected override void ClearItems()
-        {
-            foreach (var item in Items)
-            {
+        protected override void ClearItems() {
+            foreach (Column item in this.Items) {
                 item.HexView = null;
-                _owner.LogicalChildren.Remove(item);
+                this._owner.LogicalChildren.Remove(item);
             }
 
             base.ClearItems();
@@ -951,37 +858,32 @@ public class HexView : Control, ILogicalScrollable
         /// <summary>
         /// Represents a column enumerator that enumerates all columns in a hex view from a left-to-right order.
         /// </summary>
-        public struct Enumerator : IEnumerator<Column>
-        {
+        public struct Enumerator : IEnumerator<Column> {
             private readonly ColumnCollection _collection;
             private int _index = -1;
 
-            internal Enumerator(ColumnCollection collection)
-            {
-                _collection = collection;
+            internal Enumerator(ColumnCollection collection) {
+                this._collection = collection;
             }
 
             /// <inheritdoc />
-            public Column Current => _collection[_index];
+            public Column Current => this._collection[this._index];
 
-            object IEnumerator.Current => Current;
+            object IEnumerator.Current => this.Current;
 
             /// <inheritdoc />
-            public bool MoveNext()
-            {
-                _index++;
-                return _index < _collection.Count;
+            public bool MoveNext() {
+                this._index++;
+                return this._index < this._collection.Count;
             }
 
             /// <inheritdoc />
-            public void Reset()
-            {
-                _index = 0;
+            public void Reset() {
+                this._index = 0;
             }
 
             /// <inheritdoc />
-            public void Dispose()
-            {
+            public void Dispose() {
             }
         }
     }

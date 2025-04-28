@@ -8,13 +8,11 @@ namespace AvaloniaHex.Editing;
 /// <summary>
 /// Represents the layer that renders the selection in a hex view.
 /// </summary>
-public class SelectionLayer : Layer
-{
+public class SelectionLayer : Layer {
     private readonly Selection _selection;
     private readonly Caret _caret;
 
-    static SelectionLayer()
-    {
+    static SelectionLayer() {
         AffectsRender<SelectionLayer>(
             PrimarySelectionBorderProperty,
             PrimarySelectionBackgroundProperty,
@@ -31,12 +29,11 @@ public class SelectionLayer : Layer
     /// </summary>
     /// <param name="caret">The caret the selection is following.</param>
     /// <param name="selection">The selection to render.</param>
-    public SelectionLayer(Caret caret, Selection selection)
-    {
-        _selection = selection;
-        _caret = caret;
-        _selection.RangeChanged += SelectionOnRangeChanged;
-        _caret.PrimaryColumnChanged += CaretOnPrimaryColumnChanged;
+    public SelectionLayer(Caret caret, Selection selection) {
+        this._selection = selection;
+        this._caret = caret;
+        this._selection.RangeChanged += this.SelectionOnRangeChanged;
+        this._caret.PrimaryColumnChanged += this.CaretOnPrimaryColumnChanged;
     }
 
     /// <summary>
@@ -51,10 +48,9 @@ public class SelectionLayer : Layer
     /// <summary>
     /// Gets or sets the pen used for drawing the border of the selection in the active column.
     /// </summary>
-    public IPen? PrimarySelectionBorder
-    {
-        get => GetValue(PrimarySelectionBorderProperty);
-        set => SetValue(PrimarySelectionBorderProperty, value);
+    public IPen? PrimarySelectionBorder {
+        get => this.GetValue(PrimarySelectionBorderProperty);
+        set => this.SetValue(PrimarySelectionBorderProperty, value);
     }
 
     /// <summary>
@@ -69,10 +65,9 @@ public class SelectionLayer : Layer
     /// <summary>
     /// Gets or sets the brush used for drawing the background of the selection in the active column.
     /// </summary>
-    public IBrush? PrimarySelectionBackground
-    {
-        get => GetValue(PrimarySelectionBackgroundProperty);
-        set => SetValue(PrimarySelectionBackgroundProperty, value);
+    public IBrush? PrimarySelectionBackground {
+        get => this.GetValue(PrimarySelectionBackgroundProperty);
+        set => this.SetValue(PrimarySelectionBackgroundProperty, value);
     }
 
     /// <summary>
@@ -87,10 +82,9 @@ public class SelectionLayer : Layer
     /// <summary>
     /// Gets or sets the pen used for drawing the border of the selection in non-active columns.
     /// </summary>
-    public IPen? SecondarySelectionBorder
-    {
-        get => GetValue(SecondarySelectionBorderProperty);
-        set => SetValue(SecondarySelectionBorderProperty, value);
+    public IPen? SecondarySelectionBorder {
+        get => this.GetValue(SecondarySelectionBorderProperty);
+        set => this.SetValue(SecondarySelectionBorderProperty, value);
     }
 
     /// <summary>
@@ -105,58 +99,48 @@ public class SelectionLayer : Layer
     /// <summary>
     /// Gets or sets the brush used for drawing the background of the selection in non-active columns.
     /// </summary>
-    public IBrush? SecondarySelectionBackground
-    {
-        get => GetValue(SecondarySelectionBackgroundProperty);
-        set => SetValue(SecondarySelectionBackgroundProperty, value);
+    public IBrush? SecondarySelectionBackground {
+        get => this.GetValue(SecondarySelectionBackgroundProperty);
+        set => this.SetValue(SecondarySelectionBackgroundProperty, value);
     }
 
-    private void SelectionOnRangeChanged(object? sender, EventArgs e)
-    {
-        InvalidateVisual();
+    private void SelectionOnRangeChanged(object? sender, EventArgs e) {
+        this.InvalidateVisual();
     }
 
-    private void CaretOnPrimaryColumnChanged(object? sender, EventArgs e)
-    {
-        InvalidateVisual();
+    private void CaretOnPrimaryColumnChanged(object? sender, EventArgs e) {
+        this.InvalidateVisual();
     }
 
     /// <inheritdoc />
-    public override void Render(DrawingContext context)
-    {
+    public override void Render(DrawingContext context) {
         base.Render(context);
 
-        if (HexView is null || GetVisibleSelectionRange() is not { } range)
+        if (this.HexView is null || this.GetVisibleSelectionRange() is not { } range)
             return;
 
-        for (int i = 0; i < HexView.Columns.Count; i++)
-        {
-            if (HexView.Columns[i] is CellBasedColumn { IsVisible: true } column)
-                DrawSelection(context, column, range);
+        for (int i = 0; i < this.HexView.Columns.Count; i++) {
+            if (this.HexView.Columns[i] is CellBasedColumn { IsVisible: true } column)
+                this.DrawSelection(context, column, range);
         }
     }
 
-    private BitRange? GetVisibleSelectionRange()
-    {
-        if (HexView is null || !_selection.Range.OverlapsWith(HexView.VisibleRange))
+    private BitRange? GetVisibleSelectionRange() {
+        if (this.HexView is null || !this._selection.Range.OverlapsWith(this.HexView.VisibleRange))
             return null;
 
-        return new BitRange(
-            _selection.Range.Start.Max(HexView.VisibleRange.Start),
-            _selection.Range.End.Min(HexView.VisibleRange.End)
+        return new BitRange(this._selection.Range.Start.Max(this.HexView.VisibleRange.Start), this._selection.Range.End.Min(this.HexView.VisibleRange.End)
         );
     }
 
-    private void DrawSelection(DrawingContext context, CellBasedColumn column, BitRange range)
-    {
-        var geometry = CellGeometryBuilder.CreateBoundingGeometry(column, range);
+    private void DrawSelection(DrawingContext context, CellBasedColumn column, BitRange range) {
+        Geometry? geometry = CellGeometryBuilder.CreateBoundingGeometry(column, range);
         if (geometry is null)
             return;
 
-        if (_caret.PrimaryColumnIndex == column.Index)
-            context.DrawGeometry(PrimarySelectionBackground, PrimarySelectionBorder, geometry);
+        if (this._caret.PrimaryColumnIndex == column.Index)
+            context.DrawGeometry(this.PrimarySelectionBackground, this.PrimarySelectionBorder, geometry);
         else
-            context.DrawGeometry(SecondarySelectionBackground, SecondarySelectionBorder, geometry);
+            context.DrawGeometry(this.SecondarySelectionBackground, this.SecondarySelectionBorder, geometry);
     }
-
 }

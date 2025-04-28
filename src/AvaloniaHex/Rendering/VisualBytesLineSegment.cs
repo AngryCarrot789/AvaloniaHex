@@ -6,15 +6,13 @@ namespace AvaloniaHex.Rendering;
 /// <summary>
 /// Represents a single segment in a visual line.
 /// </summary>
-public class VisualBytesLineSegment
-{
+public class VisualBytesLineSegment {
     /// <summary>
     /// Creates a new segment range.
     /// </summary>
     /// <param name="range">The bit range the segment spans.</param>
-    public VisualBytesLineSegment(BitRange range)
-    {
-        Range = range;
+    public VisualBytesLineSegment(BitRange range) {
+        this.Range = range;
     }
 
     /// <summary>
@@ -39,20 +37,17 @@ public class VisualBytesLineSegment
     /// </summary>
     /// <param name="location">The location to split at.</param>
     /// <returns>The two resulting segments.</returns>
-    public (VisualBytesLineSegment, VisualBytesLineSegment) Split(BitLocation location)
-    {
-        var (left, right) = Range.Split(location);
+    public (VisualBytesLineSegment, VisualBytesLineSegment) Split(BitLocation location) {
+        (BitRange left, BitRange right) = this.Range.Split(location);
 
         return (
-            new VisualBytesLineSegment(left)
-            {
-                ForegroundBrush = ForegroundBrush,
-                BackgroundBrush = BackgroundBrush
+            new VisualBytesLineSegment(left) {
+                ForegroundBrush = this.ForegroundBrush,
+                BackgroundBrush = this.BackgroundBrush
             },
-            new VisualBytesLineSegment(right)
-            {
-                ForegroundBrush = ForegroundBrush,
-                BackgroundBrush = BackgroundBrush
+            new VisualBytesLineSegment(right) {
+                ForegroundBrush = this.ForegroundBrush,
+                BackgroundBrush = this.BackgroundBrush
             }
         );
     }

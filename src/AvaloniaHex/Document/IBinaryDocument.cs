@@ -3,8 +3,7 @@ namespace AvaloniaHex.Document;
 /// <summary>
 /// Represents a binary document that can be displayed in a hex editor.
 /// </summary>
-public interface IBinaryDocument : IDisposable
-{
+public interface IBinaryDocument : IDisposable {
     /// <summary>
     /// Fires when the contents of the document has changed.
     /// </summary>
