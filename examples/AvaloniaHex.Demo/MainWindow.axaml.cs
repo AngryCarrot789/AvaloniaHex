@@ -10,7 +10,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
-using AvaloniaHex.Document;
+using AvaloniaHex.Core.Document;
 using AvaloniaHex.Editing;
 using AvaloniaHex.Rendering;
 

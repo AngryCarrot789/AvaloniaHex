@@ -1,4 +1,4 @@
-namespace AvaloniaHex.Document;
+namespace AvaloniaHex.Core.Document;
 
 /// <summary>
 /// Represents a binary document that can be displayed in a hex editor.

@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		appveyor.yml = appveyor.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvaloniaHex.Core", "src\AvaloniaHex.Core\AvaloniaHex.Core.csproj", "{4DD18638-499C-4D21-A05E-5664545510E0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,10 +40,15 @@ Global
 		{5019E7CF-B71D-45B6-8B2D-DED8FF6AE50D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5019E7CF-B71D-45B6-8B2D-DED8FF6AE50D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5019E7CF-B71D-45B6-8B2D-DED8FF6AE50D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DD18638-499C-4D21-A05E-5664545510E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DD18638-499C-4D21-A05E-5664545510E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DD18638-499C-4D21-A05E-5664545510E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DD18638-499C-4D21-A05E-5664545510E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{63822CC7-0AD9-49F8-9B39-51179C82B10D} = {6DE9F884-B751-4065-9667-30AAC94DD926}
 		{786B774D-9400-4E36-BA71-4699727AD6BA} = {3B83E6BF-6EF1-4DBC-B73E-761BB0615360}
 		{5019E7CF-B71D-45B6-8B2D-DED8FF6AE50D} = {4A2CD31E-0968-4F4B-97E9-24B370A236C8}
+		{4DD18638-499C-4D21-A05E-5664545510E0} = {6DE9F884-B751-4065-9667-30AAC94DD926}
 	EndGlobalSection
 EndGlobal

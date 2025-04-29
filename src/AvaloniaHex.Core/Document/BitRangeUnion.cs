@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 
-namespace AvaloniaHex.Document;
+namespace AvaloniaHex.Core.Document;
 
 /// <summary>
 /// Represents a disjoint union of binary ranges.

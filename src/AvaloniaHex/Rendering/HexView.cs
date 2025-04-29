@@ -7,7 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
-using AvaloniaHex.Document;
+using AvaloniaHex.Core.Document;
 
 namespace AvaloniaHex.Rendering;
 

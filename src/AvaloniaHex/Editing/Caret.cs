@@ -1,4 +1,4 @@
-using AvaloniaHex.Document;
+using AvaloniaHex.Core.Document;
 using AvaloniaHex.Rendering;
 
 namespace AvaloniaHex.Editing;

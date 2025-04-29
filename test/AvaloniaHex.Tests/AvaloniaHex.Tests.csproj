@@ -23,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\examples\AvaloniaHex.Demo\AvaloniaHex.Demo.csproj" />
       <ProjectReference Include="..\..\src\AvaloniaHex\AvaloniaHex.csproj" />
     </ItemGroup>
 

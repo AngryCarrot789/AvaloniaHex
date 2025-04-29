@@ -1,4 +1,4 @@
-namespace AvaloniaHex.Document;
+namespace AvaloniaHex.Core.Document;
 
 /// <summary>
 /// Wraps a byte array into a binary document.

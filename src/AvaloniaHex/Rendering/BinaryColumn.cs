@@ -1,6 +1,6 @@
 using Avalonia;
 using Avalonia.Media.TextFormatting;
-using AvaloniaHex.Document;
+using AvaloniaHex.Core.Document;
 
 namespace AvaloniaHex.Rendering;
 

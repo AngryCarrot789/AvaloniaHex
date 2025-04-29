@@ -1,4 +1,4 @@
-namespace AvaloniaHex.Document;
+namespace AvaloniaHex.Core.Document;
 
 /// <summary>
 /// Represents a bit offset within a binary document.

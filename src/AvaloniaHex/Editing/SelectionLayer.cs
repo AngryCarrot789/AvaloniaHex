@@ -1,6 +1,6 @@
 using Avalonia;
 using Avalonia.Media;
-using AvaloniaHex.Document;
+using AvaloniaHex.Core.Document;
 using AvaloniaHex.Rendering;
 
 namespace AvaloniaHex.Editing;
