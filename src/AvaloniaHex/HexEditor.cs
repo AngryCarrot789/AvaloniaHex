@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using AvaloniaHex.Document;
 using AvaloniaHex.Editing;
 using AvaloniaHex.Rendering;
@@ -15,14 +16,93 @@ namespace AvaloniaHex;
 /// </summary>
 public class HexEditor : TemplatedControl {
     /// <summary>
+    /// Dependency property for <see cref="HorizontalScrollBarVisibility"/>
+    /// </summary>
+    public static readonly AttachedProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty = ScrollViewer.HorizontalScrollBarVisibilityProperty.AddOwner<HexEditor>();
+
+    /// <summary>
+    /// Dependency property for <see cref="VerticalScrollBarVisibility"/>
+    /// </summary>
+    public static readonly AttachedProperty<ScrollBarVisibility> VerticalScrollBarVisibilityProperty = ScrollViewer.VerticalScrollBarVisibilityProperty.AddOwner<HexEditor>();
+
+    /// <summary>
+    /// Dependency property for <see cref="ColumnPadding"/>
+    /// </summary>
+    public static readonly DirectProperty<HexEditor, double> ColumnPaddingProperty = AvaloniaProperty.RegisterDirect<HexEditor, double>(nameof(ColumnPadding), editor => editor.ColumnPadding, (editor, value) => editor.ColumnPadding = value);
+
+    /// <summary>
+    /// Dependency property for <see cref="Document"/>.
+    /// </summary>
+    public static readonly StyledProperty<IBinaryDocument?> DocumentProperty = AvaloniaProperty.Register<HexEditor, IBinaryDocument?>(nameof(Document));
+
+    /// <summary>
+    /// Dependency property for <see cref="Columns"/>.
+    /// </summary>
+    public static readonly DirectProperty<HexEditor, HexView.ColumnCollection> ColumnsProperty = AvaloniaProperty.RegisterDirect<HexEditor, HexView.ColumnCollection>(nameof(Columns), o => o.Columns);
+
+    /// <summary>
+    /// Gets or sets the horizontal scroll bar visibility.
+    /// </summary>
+    public ScrollBarVisibility HorizontalScrollBarVisibility {
+        get => this.GetValue(HorizontalScrollBarVisibilityProperty);
+        set => this.SetValue(HorizontalScrollBarVisibilityProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the horizontal scroll bar visibility.
+    /// </summary>
+    public ScrollBarVisibility VerticalScrollBarVisibility {
+        get => this.GetValue(VerticalScrollBarVisibilityProperty);
+        set => this.SetValue(VerticalScrollBarVisibilityProperty, value);
+    }
+
+    /// <summary>
+    /// Gets the embedded hex view control responsible for rendering the data.
+    /// </summary>
+    public HexView HexView { get; }
+
+    /// <summary>
+    /// Gets the amount of spacing in between columns.
+    /// </summary>
+    public double ColumnPadding {
+        get => this.HexView.ColumnPadding;
+        set => this.HexView.ColumnPadding = value;
+    }
+
+
+    /// <summary>
+    /// Gets or sets the binary document that is currently being displayed.
+    /// </summary>
+    public IBinaryDocument? Document {
+        get => this.GetValue(DocumentProperty);
+        set => this.SetValue(DocumentProperty, value);
+    }
+
+    /// <summary>
+    /// Gets the caret object in the editor control.
+    /// </summary>
+    public Caret Caret { get; }
+
+    /// <summary>
+    /// Gets the current selection in the editor control.
+    /// </summary>
+    public Selection Selection { get; }
+
+    /// <summary>
+    /// Gets the columns displayed in the hex editor.
+    /// </summary>
+    public HexView.ColumnCollection Columns => this.HexView.Columns;
+
+    /// <summary>
     /// Fires when the document in the hex editor has changed.
     /// </summary>
     public event EventHandler<DocumentChangedEventArgs>? DocumentChanged;
 
-    private ScrollViewer? _scrollViewer;
-
+    private ScrollViewer? myScrollViewer;
+    private HeaderControl? myHeaderContentPresenter;
     private BitLocation? _selectionAnchorPoint;
     private bool _isMouseDragging;
+    private bool isProcessingKeyDown, isProcessingTextInput;
 
     static HexEditor() {
         FocusableProperty.OverrideDefaultValue<HexEditor>(true);
@@ -48,104 +128,33 @@ public class HexEditor : TemplatedControl {
         this.HexView.Layers.InsertBefore<TextLayer>(new SelectionLayer(this.Caret, this.Selection));
         this.HexView.Layers.Add(new CaretLayer(this.Caret));
         this.HexView.DocumentChanged += this.HexViewOnDocumentChanged;
+        this.HexView.VisualLinesInvalidated += this.OnVisualLinesInvalidated;
+        this.HexView.ScrollInvalidated += this.OnScrollInvalidated;
 
         this.Caret.PrimaryColumnIndex = 1;
         this.Caret.LocationChanged += this.CaretOnLocationChanged;
     }
 
-    /// <summary>
-    /// Dependency property for <see cref="HorizontalScrollBarVisibility"/>
-    /// </summary>
-    public static readonly AttachedProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty =
-        ScrollViewer.HorizontalScrollBarVisibilityProperty.AddOwner<HexEditor>();
-
-    /// <summary>
-    /// Gets or sets the horizontal scroll bar visibility.
-    /// </summary>
-    public ScrollBarVisibility HorizontalScrollBarVisibility {
-        get => this.GetValue(HorizontalScrollBarVisibilityProperty);
-        set => this.SetValue(HorizontalScrollBarVisibilityProperty, value);
-    }
-
-    /// <summary>
-    /// Dependency property for <see cref="VerticalScrollBarVisibility"/>
-    /// </summary>
-    public static readonly AttachedProperty<ScrollBarVisibility> VerticalScrollBarVisibilityProperty =
-        ScrollViewer.VerticalScrollBarVisibilityProperty.AddOwner<HexEditor>();
-
-    /// <summary>
-    /// Gets or sets the horizontal scroll bar visibility.
-    /// </summary>
-    public ScrollBarVisibility VerticalScrollBarVisibility {
-        get => this.GetValue(VerticalScrollBarVisibilityProperty);
-        set => this.SetValue(VerticalScrollBarVisibilityProperty, value);
-    }
-
-    /// <summary>
-    /// Gets the embedded hex view control responsible for rendering the data.
-    /// </summary>
-    public HexView HexView { get; }
-
-    /// <summary>
-    /// Dependency property for <see cref="ColumnPadding"/>
-    /// </summary>
-    public static readonly DirectProperty<HexEditor, double> ColumnPaddingProperty =
-        AvaloniaProperty.RegisterDirect<HexEditor, double>(
-            nameof(ColumnPadding),
-            editor => editor.ColumnPadding,
-            (editor, value) => editor.ColumnPadding = value
-        );
-
-    /// <summary>
-    /// Gets the amount of spacing in between columns.
-    /// </summary>
-    public double ColumnPadding {
-        get => this.HexView.ColumnPadding;
-        set => this.HexView.ColumnPadding = value;
-    }
-
-    /// <summary>
-    /// Dependency property for <see cref="Document"/>.
-    /// </summary>
-    public static readonly StyledProperty<IBinaryDocument?> DocumentProperty =
-        AvaloniaProperty.Register<HexEditor, IBinaryDocument?>(nameof(Document));
-
-    /// <summary>
-    /// Gets or sets the binary document that is currently being displayed.
-    /// </summary>
-    public IBinaryDocument? Document {
-        get => this.GetValue(DocumentProperty);
-        set => this.SetValue(DocumentProperty, value);
-    }
-
-    /// <summary>
-    /// Gets the caret object in the editor control.
-    /// </summary>
-    public Caret Caret { get; }
-
-    /// <summary>
-    /// Gets the current selection in the editor control.
-    /// </summary>
-    public Selection Selection { get; }
-
-    /// <summary>
-    /// Dependency property for <see cref="Columns"/>.
-    /// </summary>
-    public static readonly DirectProperty<HexEditor, HexView.ColumnCollection> ColumnsProperty =
-        AvaloniaProperty.RegisterDirect<HexEditor, HexView.ColumnCollection>(nameof(Columns), o => o.Columns);
-
-    /// <summary>
-    /// Gets the columns displayed in the hex editor.
-    /// </summary>
-    public HexView.ColumnCollection Columns => this.HexView.Columns;
-
     /// <inheritdoc />
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
         base.OnApplyTemplate(e);
 
-        this._scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
-        if (this._scrollViewer is not null)
-            this._scrollViewer.Content = this.HexView;
+        this.myScrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+        if (this.myScrollViewer != null)
+            this.myScrollViewer.Content = this.HexView;
+        
+        this.myHeaderContentPresenter = e.NameScope.Find<HeaderControl>("PART_Header");
+        if (this.myHeaderContentPresenter != null)
+            this.myHeaderContentPresenter.HexEditor = this;
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e) {
+        base.OnLoaded(e);
+
+        // This prevents a bug where the logical bounds.height of the columns are tiny for some reason
+        Dispatcher.UIThread.InvokeAsync(() => {
+            this.HexView.InvalidateMeasure();
+        }, DispatcherPriority.Background);
     }
 
     private static void ForwardToHexView<TValue>(HexEditor sender, AvaloniaPropertyChangedEventArgs<TValue> e) {
@@ -165,6 +174,14 @@ public class HexEditor : TemplatedControl {
         this.Caret.Location = default;
         this.UpdateSelection(this.Caret.Location, false);
         this.OnDocumentChanged(e);
+    }
+    
+    private void OnVisualLinesInvalidated(object? sender, EventArgs e) {
+        this.myHeaderContentPresenter?.InvalidateHeaderLines();
+    }
+    
+    private void OnScrollInvalidated(object? sender, EventArgs e) {
+        this.myHeaderContentPresenter?.InvalidateHeaderLines();
     }
 
     /// <summary>
@@ -239,125 +256,146 @@ public class HexEditor : TemplatedControl {
     }
 
     /// <inheritdoc />
-    protected override void OnTextInput(TextInputEventArgs e) {
+    protected override async void OnTextInput(TextInputEventArgs e) {
         base.OnTextInput(e);
-
-        // Are we in a writeable document?
-        if (this.Document is not { IsReadOnly: false })
+        
+        if (this.isProcessingTextInput) {
             return;
-
-        // Do we have any text to write into a column?
-        if (string.IsNullOrEmpty(e.Text) || this.Caret.PrimaryColumn is null)
-            return;
-
-        if (this.Caret.Mode == EditingMode.Insert) {
-            // Can we insert?
-            if (!this.Document.CanInsert)
-                return;
-
-            // If we selected something while inserting, a natural expectation is that the selection is deleted first.
-            if (this.Selection.Range.ByteLength > 1) {
-                if (!this.Document.CanRemove)
-                    return;
-
-                this.Delete();
-            }
         }
 
-        // Dispatch text input to the primary column.
-        BitLocation location = this.Caret.Location;
-        if (!this.Caret.PrimaryColumn.HandleTextInput(ref location, e.Text, this.Caret.Mode))
-            return;
+        try {
+            this.isProcessingTextInput = true;
+            
+            // Are we in a writeable document?
+            if (this.Document is not { IsReadOnly: false })
+                return;
 
-        // Update caret location.
-        this.Caret.Location = location;
-        this.UpdateSelection(this.Caret.Location, false);
+            // Do we have any text to write into a column?
+            if (string.IsNullOrEmpty(e.Text) || this.Caret.PrimaryColumn is null)
+                return;
+
+            if (this.Caret.Mode == EditingMode.Insert) {
+                // Can we insert?
+                if (!this.Document.CanInsert)
+                    return;
+
+                // If we selected something while inserting, a natural expectation is that the selection is deleted first.
+                if (this.Selection.Range.ByteLength > 1) {
+                    if (!this.Document.CanRemove)
+                        return;
+
+                    this.Delete();
+                }
+            }
+
+            // Dispatch text input to the primary column.
+            (bool Handled, BitLocation NewLocation) result = await this.Caret.PrimaryColumn.HandleTextInput(this.Caret.Location, e.Text, this.Caret.Mode);
+            if (result.Handled) {
+                this.Caret.Location = result.NewLocation;
+                this.UpdateSelection(this.Caret.Location, false);
+            }
+
+            // Update caret location.
+        }
+        finally {
+            this.isProcessingTextInput = false;
+        }
     }
 
     private async void OnPreviewKeyDown(object? sender, KeyEventArgs e) {
-        BitLocation oldLocation = this.Caret.Location;
-        bool isShiftDown = (e.KeyModifiers & KeyModifiers.Shift) != 0;
+        if (this.isProcessingKeyDown) {
+            return;
+        }
 
-        switch (e.Key) {
-            case Key.A when (e.KeyModifiers & KeyModifiers.Control) != 0: this.Selection.SelectAll(); break;
+        try {
+            this.isProcessingKeyDown = true;
+            BitLocation oldLocation = this.Caret.Location;
+            bool isShiftDown = (e.KeyModifiers & KeyModifiers.Shift) != 0;
 
-            case Key.C when (e.KeyModifiers & KeyModifiers.Control) != 0: await this.Copy(); break;
+            switch (e.Key) {
+                case Key.A when (e.KeyModifiers & KeyModifiers.Control) != 0: this.Selection.SelectAll(); break;
 
-            case Key.V when (e.KeyModifiers & KeyModifiers.Control) != 0: await this.Paste(); break;
+                case Key.C when (e.KeyModifiers & KeyModifiers.Control) != 0: await this.Copy(); break;
 
-            case Key.Home when (e.KeyModifiers & KeyModifiers.Control) != 0:
-                this.Caret.GoToStartOfDocument();
-                this.UpdateSelection(oldLocation, isShiftDown);
-            break;
+                case Key.V when (e.KeyModifiers & KeyModifiers.Control) != 0: await this.Paste(); break;
 
-            case Key.Home:
-                this.Caret.GoToStartOfLine();
-                this.UpdateSelection(oldLocation, isShiftDown);
-            break;
+                case Key.Home when (e.KeyModifiers & KeyModifiers.Control) != 0:
+                    this.Caret.GoToStartOfDocument();
+                    this.UpdateSelection(oldLocation, isShiftDown);
+                break;
 
-            case Key.End when (e.KeyModifiers & KeyModifiers.Control) != 0:
-                this.Caret.GoToEndOfDocument();
-                this.UpdateSelection(oldLocation, isShiftDown);
-            break;
+                case Key.Home:
+                    this.Caret.GoToStartOfLine();
+                    this.UpdateSelection(oldLocation, isShiftDown);
+                break;
 
-            case Key.End:
-                this.Caret.GoToEndOfLine();
-                this.UpdateSelection(oldLocation, isShiftDown);
-            break;
+                case Key.End when (e.KeyModifiers & KeyModifiers.Control) != 0:
+                    this.Caret.GoToEndOfDocument();
+                    this.UpdateSelection(oldLocation, isShiftDown);
+                break;
 
-            case Key.Left:
-                this.Caret.GoLeft();
-                this.UpdateSelection(oldLocation, isShiftDown);
-            break;
+                case Key.End:
+                    this.Caret.GoToEndOfLine();
+                    this.UpdateSelection(oldLocation, isShiftDown);
+                break;
 
-            case Key.Up when (e.KeyModifiers & KeyModifiers.Control) != 0:
-                this.HexView.ScrollOffset = new Vector(this.HexView.ScrollOffset.X,
-                    Math.Max(0, this.HexView.ScrollOffset.Y - 1)
-                );
-            break;
+                case Key.Left:
+                    this.Caret.GoLeft();
+                    this.UpdateSelection(oldLocation, isShiftDown);
+                break;
 
-            case Key.Up:
-                this.Caret.GoUp();
-                this.UpdateSelection(oldLocation, isShiftDown);
-            break;
+                case Key.Up when (e.KeyModifiers & KeyModifiers.Control) != 0:
+                    this.HexView.ScrollOffset = new Vector(this.HexView.ScrollOffset.X,
+                        Math.Max(0, this.HexView.ScrollOffset.Y - 1)
+                    );
+                break;
 
-            case Key.PageUp:
-                this.Caret.GoPageUp();
-                this.UpdateSelection(oldLocation, isShiftDown);
-                e.Handled = true;
-            break;
+                case Key.Up:
+                    this.Caret.GoUp();
+                    this.UpdateSelection(oldLocation, isShiftDown);
+                break;
 
-            case Key.Right:
-                this.Caret.GoRight();
-                this.UpdateSelection(oldLocation, isShiftDown);
-            break;
+                case Key.PageUp:
+                    this.Caret.GoPageUp();
+                    this.UpdateSelection(oldLocation, isShiftDown);
+                    e.Handled = true;
+                break;
 
-            case Key.Down when (e.KeyModifiers & KeyModifiers.Control) != 0:
-                this.HexView.ScrollOffset = new Vector(this.HexView.ScrollOffset.X,
-                    Math.Min(this.HexView.Extent.Height - 1, this.HexView.ScrollOffset.Y + 1)
-                );
-            break;
+                case Key.Right:
+                    this.Caret.GoRight();
+                    this.UpdateSelection(oldLocation, isShiftDown);
+                break;
 
-            case Key.Down:
-                this.Caret.GoDown();
-                this.UpdateSelection(oldLocation, isShiftDown);
-            break;
+                case Key.Down when (e.KeyModifiers & KeyModifiers.Control) != 0:
+                    this.HexView.ScrollOffset = new Vector(this.HexView.ScrollOffset.X,
+                        Math.Min(this.HexView.Extent.Height - 1, this.HexView.ScrollOffset.Y + 1)
+                    );
+                break;
 
-            case Key.PageDown:
-                this.Caret.GoPageDown();
-                this.UpdateSelection(oldLocation, isShiftDown);
-                e.Handled = true;
-            break;
+                case Key.Down:
+                    this.Caret.GoDown();
+                    this.UpdateSelection(oldLocation, isShiftDown);
+                break;
 
-            case Key.Insert:
-                this.Caret.Mode = this.Caret.Mode == EditingMode.Overwrite
-                    ? EditingMode.Insert
-                    : EditingMode.Overwrite;
-            break;
+                case Key.PageDown:
+                    this.Caret.GoPageDown();
+                    this.UpdateSelection(oldLocation, isShiftDown);
+                    e.Handled = true;
+                break;
 
-            case Key.Delete: this.Delete(); break;
+                case Key.Insert:
+                    this.Caret.Mode = this.Caret.Mode == EditingMode.Overwrite
+                        ? EditingMode.Insert
+                        : EditingMode.Overwrite;
+                break;
 
-            case Key.Back: this.Backspace(); break;
+                case Key.Delete: this.Delete(); break;
+
+                case Key.Back: this.Backspace(); break;
+            }
+        }
+        finally {
+            this.isProcessingKeyDown = false;
         }
     }
 
@@ -374,7 +412,7 @@ public class HexEditor : TemplatedControl {
         if (this.Caret.PrimaryColumn is not { } column || TopLevel.GetTopLevel(this)?.Clipboard is not { } clipboard)
             return;
 
-        string? text = column.GetText(this.Selection.Range);
+        string? text = await column.GetTextFromDocumentAsync(this.Selection.Range);
         if (string.IsNullOrEmpty(text))
             return;
 
@@ -396,12 +434,11 @@ public class HexEditor : TemplatedControl {
         if (string.IsNullOrEmpty(text))
             return;
 
-        BitLocation newLocation = oldLocation;
-        if (!column.HandleTextInput(ref newLocation, text, this.Caret.Mode))
-            return;
-
-        this.Caret.Location = newLocation;
-        this.UpdateSelection(oldLocation, false);
+        (bool Handled, BitLocation NewLocation) result = await column.HandleTextInput(oldLocation, text, this.Caret.Mode);
+        if (result.Handled) {
+            this.Caret.Location = result.NewLocation;
+            this.UpdateSelection(oldLocation, false);
+        }
     }
 
     /// <summary>
@@ -473,8 +510,18 @@ public class HexEditor : TemplatedControl {
         }
         else {
             this._selectionAnchorPoint ??= from.AlignDown();
-            this.Selection.Range = new BitRange(this.Caret.Location.Min(this._selectionAnchorPoint.Value).AlignDown(), this.Caret.Location.Max(this._selectionAnchorPoint.Value).NextOrMax().AlignUp()
-            );
+            this.Selection.Range = new BitRange(this.Caret.Location.Min(this._selectionAnchorPoint.Value).AlignDown(), this.Caret.Location.Max(this._selectionAnchorPoint.Value).NextOrMax().AlignUp());
         }
+    }
+
+    protected override void OnGotFocus(GotFocusEventArgs e) {
+        base.OnGotFocus(e);
+        e.Handled = true;
+
+        // Using dispatcher here prevents external focus managers having an
+        // inconsistent state. Focusing another element in OnGotFocus is a bad idea
+        Dispatcher.UIThread.InvokeAsync(() => {
+            this.HexView.Focus();
+        }, DispatcherPriority.Background);
     }
 }

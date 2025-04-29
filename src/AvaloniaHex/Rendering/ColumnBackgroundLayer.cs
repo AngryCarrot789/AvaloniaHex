@@ -13,7 +13,7 @@ public class ColumnBackgroundLayer : Layer {
     public override void Render(DrawingContext context) {
         base.Render(context);
 
-        if (this.HexView is null)
+        if (this.HexView == null)
             return;
 
         foreach (Column column in this.HexView.Columns) {

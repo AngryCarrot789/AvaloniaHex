@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using Avalonia;
 using Avalonia.Media.TextFormatting;
 using AvaloniaHex.Document;
@@ -66,12 +68,12 @@ public class HexColumn : CellBasedColumn {
     }
 
     /// <inheritdoc />
-    public override string? GetText(BitRange range) {
+    public override async Task<string?> GetTextFromDocumentAsync(BitRange range) {
         if (this.HexView?.Document is null)
             return null;
 
         byte[] data = new byte[range.ByteLength];
-        this.HexView.Document.ReadBytes(range.Start.ByteIndex, data);
+        await this.HexView.Document.ReadBytesAsync(range.Start.ByteIndex, data);
 
         char[] output = new char[data.Length * 3 - 1];
         this.GetText(data, range, output);
@@ -81,12 +83,55 @@ public class HexColumn : CellBasedColumn {
 
     /// <inheritdoc />
     public override TextLine? CreateTextLine(VisualBytesLine line) {
-        if (this.HexView is null)
+        if (this.HexView == null)
             return null;
 
         GenericTextRunProperties properties = this.GetTextRunProperties();
         return TextFormatter.Current.FormatLine(
             new HexTextSource(this, line, properties),
+            0,
+            double.MaxValue,
+            new GenericTextParagraphProperties(properties)
+        );
+    }
+    
+    public override TextLine? CreateHeaderLine() {
+        if (this.HexView == null)
+            return null;
+
+        int cellCount = this.CellCount;
+        int cpw = this.CellsPerWord;
+        int wordCount = cellCount / cpw;
+        if (wordCount < 1) {
+            return null;
+        }
+
+        StringBuilder sb1 = new StringBuilder();
+        for (int i = 0; i < cpw; i++) {
+            sb1.Append('F');
+        }
+
+        int limit = int.Parse(sb1.ToString(), NumberStyles.HexNumber);
+        IBinaryDocument? document = this.HexView.Document;
+        if (document == null) {
+            return null;
+        }
+
+        BitLocation startLocation = new BitLocation((ulong) this.HexView.ScrollOffset.Y * (ulong) this.HexView.ActualBytesPerLine);
+        BitRange currentRange = new BitRange(startLocation, startLocation);
+        ulong offset = currentRange.End.ByteIndex;
+        StringBuilder sb = new StringBuilder(cellCount + wordCount - 1);
+        for (int i = 0; i < wordCount; i++) {
+            ulong j = (offset + (ulong) i) % (ulong) limit;
+            sb.Append(j.ToString("X2"));
+            if (i != (wordCount - 1)) {
+                sb.Append(' ');
+            }
+        }
+        
+        GenericTextRunProperties properties = this.GetTextRunProperties();
+        return TextFormatter.Current.FormatLine(
+            new SimpleTextSource(sb.ToString(), properties),
             0,
             double.MaxValue,
             new GenericTextParagraphProperties(properties)

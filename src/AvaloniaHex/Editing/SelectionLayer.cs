@@ -116,7 +116,7 @@ public class SelectionLayer : Layer {
     public override void Render(DrawingContext context) {
         base.Render(context);
 
-        if (this.HexView is null || this.GetVisibleSelectionRange() is not { } range)
+        if (this.HexView == null || this.GetVisibleSelectionRange() is not { } range)
             return;
 
         for (int i = 0; i < this.HexView.Columns.Count; i++) {
@@ -126,7 +126,7 @@ public class SelectionLayer : Layer {
     }
 
     private BitRange? GetVisibleSelectionRange() {
-        if (this.HexView is null || !this._selection.Range.OverlapsWith(this.HexView.VisibleRange))
+        if (this.HexView == null || !this._selection.Range.OverlapsWith(this.HexView.VisibleRange))
             return null;
 
         return new BitRange(this._selection.Range.Start.Max(this.HexView.VisibleRange.Start), this._selection.Range.End.Min(this.HexView.VisibleRange.End)

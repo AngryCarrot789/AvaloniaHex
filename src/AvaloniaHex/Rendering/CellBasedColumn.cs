@@ -92,10 +92,10 @@ public abstract class CellBasedColumn : Column {
     /// <param name="input">The textual input to process.</param>
     /// <param name="mode"></param>
     /// <returns><c>true</c> if the document was changed, <c>false</c> otherwise.</returns>
-    public bool HandleTextInput(ref BitLocation location, string input, EditingMode mode) {
+    public async Task<(bool Handled, BitLocation NewLocation)> HandleTextInput(BitLocation location, string input, EditingMode mode) {
         IBinaryDocument? document = this.HexView?.Document;
         if (document is null)
-            return false;
+            return (false, location);
 
         // Pre-process text (e.g., remove spaces etc.)
         input = this.PrepareTextInput(input);
@@ -117,7 +117,7 @@ public abstract class CellBasedColumn : Column {
         switch (mode) {
             case EditingMode.Overwrite:
                 if (!document.ValidRanges.IsSuperSetOf(affectedRange))
-                    return false;
+                    return (false, location);
 
                 // We need to read the original bytes if we are overwriting, as cells do not necessarily encompass entire bytes.
                 originalDataReadCount = (int) affectedRange.ByteLength;
@@ -137,7 +137,7 @@ public abstract class CellBasedColumn : Column {
         byte[] data = new byte[affectedRange.ByteLength];
 
         if (originalDataReadCount > 0)
-            document.ReadBytes(location.ByteIndex, data.AsSpan(0, originalDataReadCount));
+            await document.ReadBytesAsync(location.ByteIndex, new Memory<byte>(data, 0, originalDataReadCount));
 
         // Write all the cells in the temporary buffer.
         BitLocation newLocation = location;
@@ -145,12 +145,12 @@ public abstract class CellBasedColumn : Column {
             // Are we overwriting in a valid cell in the document?
             if (mode == EditingMode.Overwrite
                 && !document.ValidRanges.IsSuperSetOf(new BitRange(newLocation, newLocation.AddBits((ulong) this.BitsPerCell)))) {
-                return false;
+                return (false, location);
             }
 
             // Try handling the textual input according to the column's string format.
             if (!this.TryWriteCell(data, location, newLocation, input[i]))
-                return false;
+                return (false, location);
 
             newLocation = this.GetNextLocation(newLocation, mode == EditingMode.Insert, false);
         }
@@ -175,20 +175,19 @@ public abstract class CellBasedColumn : Column {
         }
 
         // Move to final location.
-        location = newLocation;
-        return true;
+        return (true, newLocation);
     }
 
     /// <summary>
-    /// Gets the textual representation of the provided bit range.
+    /// Gets the textual representation of the provided bit range as an asynchronous operation
     /// </summary>
     /// <param name="range">The range.</param>
-    /// <returns>The text.</returns>
-    public abstract string? GetText(BitRange range);
+    /// <returns>The task which contains the text.</returns>
+    public abstract Task<string?> GetTextFromDocumentAsync(BitRange range);
 
     /// <inheritdoc />
     public override void Measure() {
-        if (this.HexView is null) {
+        if (this.HexView == null) {
             this.CellSize = default;
         }
         else {

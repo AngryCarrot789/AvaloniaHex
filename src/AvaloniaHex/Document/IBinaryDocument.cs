@@ -42,6 +42,16 @@ public interface IBinaryDocument : IDisposable {
     void ReadBytes(ulong offset, Span<byte> buffer);
 
     /// <summary>
+    /// Reads bytes from the document at the provided offset.
+    /// </summary>
+    /// <param name="offset">The offset to start reading at.</param>
+    /// <param name="buffer">The buffer to write the read data to.</param>
+    Task ReadBytesAsync(ulong offset, Memory<byte> buffer) {
+        this.ReadBytes(offset, buffer.Span);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// Writes bytes to the document at the provided offset.
     /// </summary>
     /// <param name="offset">The offset to start writing at.</param>

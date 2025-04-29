@@ -108,7 +108,7 @@ public abstract class Column : Visual {
     /// <returns>The properties.</returns>
     /// <exception cref="InvalidOperationException">Occurs when the column is not added to a hex view.</exception>
     protected GenericTextRunProperties GetTextRunProperties() {
-        if (this.HexView is null)
+        if (this.HexView == null)
             throw new InvalidOperationException("Cannot query text run properties on a column that is not attached to a hex view.");
 
         if (!this.HexView.TextRunProperties.Equals(this._textRunProperties))
@@ -129,6 +129,12 @@ public abstract class Column : Visual {
     /// <returns>The rendered text.</returns>
     public abstract TextLine? CreateTextLine(VisualBytesLine line);
 
+    /// <summary>
+    /// Constructs the text line for a header of this column
+    /// </summary>
+    /// <returns>The rendered text.</returns>
+    public abstract TextLine? CreateHeaderLine();
+    
     private static void OnVisualPropertyChanged(Column arg1, AvaloniaPropertyChangedEventArgs arg2) {
         arg1.HexView?.InvalidateVisualLines();
     }

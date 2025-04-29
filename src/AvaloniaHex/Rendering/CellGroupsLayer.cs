@@ -9,19 +9,20 @@ namespace AvaloniaHex.Rendering;
 /// Provides a render layer for a hex view that visually separates groups of cells.
 /// </summary>
 public class CellGroupsLayer : Layer {
-    static CellGroupsLayer() {
-        AffectsRender<CellGroupsLayer>(
-            BytesPerGroupProperty,
-            BorderProperty,
-            BackgroundsProperty
-        );
-    }
-
     /// <summary>
     /// Defines the <see cref="BytesPerGroupProperty"/> property.
     /// </summary>
-    public static readonly StyledProperty<int> BytesPerGroupProperty =
-        AvaloniaProperty.Register<CellGroupsLayer, int>(nameof(BytesPerGroup), 8);
+    public static readonly StyledProperty<int> BytesPerGroupProperty = AvaloniaProperty.Register<CellGroupsLayer, int>(nameof(BytesPerGroup), 8);
+
+    /// <summary>
+    /// Defines the <see cref="Border"/> property.
+    /// </summary>
+    public static readonly StyledProperty<IPen?> BorderProperty = AvaloniaProperty.Register<CellGroupsLayer, IPen?>(nameof(Border));
+
+    /// <summary>
+    /// Defines the <see cref="Backgrounds"/> property.
+    /// </summary>
+    public static readonly DirectProperty<CellGroupsLayer, ObservableCollection<IBrush?>> BackgroundsProperty = AvaloniaProperty.RegisterDirect<CellGroupsLayer, ObservableCollection<IBrush?>>(nameof(Backgrounds), x => x.Backgrounds);
 
     /// <summary>
     /// Gets or sets a value indicating the number of cells each group consists of.
@@ -30,14 +31,7 @@ public class CellGroupsLayer : Layer {
         get => this.GetValue(BytesPerGroupProperty);
         set => this.SetValue(BytesPerGroupProperty, value);
     }
-
-    /// <summary>
-    /// Defines the <see cref="Border"/> property.
-    /// </summary>
-    public static readonly StyledProperty<IPen?> BorderProperty =
-        AvaloniaProperty.Register<CellGroupsLayer, IPen?>(
-            nameof(Border));
-
+    
     /// <summary>
     /// Gets or sets the pen used for rendering the separation lines between each group.
     /// </summary>
@@ -47,24 +41,26 @@ public class CellGroupsLayer : Layer {
     }
 
     /// <summary>
-    /// Defines the <see cref="Backgrounds"/> property.
-    /// </summary>
-    public static readonly DirectProperty<CellGroupsLayer, ObservableCollection<IBrush?>> BackgroundsProperty =
-        AvaloniaProperty.RegisterDirect<CellGroupsLayer, ObservableCollection<IBrush?>>(
-            nameof(Backgrounds),
-            x => x.Backgrounds
-        );
-
-    /// <summary>
     /// Gets a collection of background brushes that each vertical cell group is rendered with.
     /// </summary>
     public ObservableCollection<IBrush?> Backgrounds { get; } = new();
 
+    static CellGroupsLayer() {
+        AffectsRender<CellGroupsLayer>(
+            BytesPerGroupProperty,
+            BorderProperty,
+            BackgroundsProperty
+        );
+    }
+
+    public CellGroupsLayer() {
+    }
+    
     /// <inheritdoc />
     public override void Render(DrawingContext context) {
         base.Render(context);
 
-        if (this.HexView is null || this.Border is null || this.HexView.VisualLines.Count == 0)
+        if (this.HexView == null || this.Border is null || this.HexView.VisualLines.Count == 0)
             return;
 
         foreach (Column c in this.HexView.Columns) {

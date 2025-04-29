@@ -46,13 +46,12 @@ public class BinaryColumn : CellBasedColumn {
         return true;
     }
 
-    /// <inheritdoc />
-    public override string? GetText(BitRange range) {
+    public override async Task<string?> GetTextFromDocumentAsync(BitRange range) {
         if (this.HexView?.Document is null)
             return null;
 
         byte[] data = new byte[range.ByteLength];
-        this.HexView.Document.ReadBytes(range.Start.ByteIndex, data);
+        await this.HexView.Document.ReadBytesAsync(range.Start.ByteIndex, data);
 
         char[] output = new char[data.Length * 3 - 1];
         this.GetText(data, range, output);
@@ -62,12 +61,25 @@ public class BinaryColumn : CellBasedColumn {
 
     /// <inheritdoc />
     public override TextLine? CreateTextLine(VisualBytesLine line) {
-        if (this.HexView is null)
+        if (this.HexView == null)
             return null;
 
         GenericTextRunProperties properties = this.GetTextRunProperties();
         return TextFormatter.Current.FormatLine(
             new BinaryTextSource(this, line, properties),
+            0,
+            double.MaxValue,
+            new GenericTextParagraphProperties(properties)
+        );
+    }
+    
+    public override TextLine? CreateHeaderLine() {
+        if (this.HexView == null)
+            return null;
+
+        GenericTextRunProperties properties = this.GetTextRunProperties();
+        return TextFormatter.Current.FormatLine(
+            new SimpleTextSource("Header", properties),
             0,
             double.MaxValue,
             new GenericTextParagraphProperties(properties)

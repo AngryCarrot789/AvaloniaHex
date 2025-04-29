@@ -36,7 +36,7 @@ public class OffsetColumn : Column {
 
     /// <inheritdoc />
     public override void Measure() {
-        if (this.HexView is null) {
+        if (this.HexView == null) {
             this._minimumSize = default;
         }
         else {
@@ -47,7 +47,7 @@ public class OffsetColumn : Column {
 
     /// <inheritdoc />
     public override TextLine? CreateTextLine(VisualBytesLine line) {
-        if (this.HexView is null)
+        if (this.HexView == null)
             throw new InvalidOperationException();
 
         ulong offset = line.Range.Start.ByteIndex;
@@ -58,8 +58,15 @@ public class OffsetColumn : Column {
         return this.CreateTextLine(text);
     }
 
+    public override TextLine? CreateHeaderLine() {
+        if (this.HexView == null)
+            throw new InvalidOperationException();
+
+        return this.CreateTextLine("Offset");
+    }
+
     private TextLine? CreateTextLine(string text) {
-        if (this.HexView is null)
+        if (this.HexView == null)
             return null;
 
         GenericTextRunProperties properties = this.GetTextRunProperties();

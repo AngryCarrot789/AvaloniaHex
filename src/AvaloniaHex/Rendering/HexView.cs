@@ -15,57 +15,30 @@ namespace AvaloniaHex.Rendering;
 /// Provides a render target for binary data.
 /// </summary>
 public class HexView : Control, ILogicalScrollable {
-    /// <inheritdoc />
-    public event EventHandler? ScrollInvalidated;
+    /// <summary>
+    /// Dependency property for <see cref="Columns"/>.
+    /// </summary>
+    public static readonly DirectProperty<HexView, ColumnCollection> ColumnsProperty = AvaloniaProperty.RegisterDirect<HexView, ColumnCollection>(nameof(Columns), o => o.Columns);
 
     /// <summary>
-    /// Fires when the document in the hex editor has changed.
+    /// Dependency property for <see cref="ColumnPadding"/>.
     /// </summary>
-    public event EventHandler<DocumentChangedEventArgs>? DocumentChanged;
-
-    private readonly VisualBytesLinesBuffer _visualLines;
-    private Vector _scrollOffset;
-    private Size _extent;
-    private int _actualBytesPerLine;
-
-    static HexView() {
-        FocusableProperty.OverrideDefaultValue<HexView>(true);
-
-        TemplatedControl.FontFamilyProperty.Changed.AddClassHandler<HexView>(OnFontRelatedPropertyChanged);
-        TemplatedControl.FontSizeProperty.Changed.AddClassHandler<HexView>(OnFontRelatedPropertyChanged);
-        TemplatedControl.ForegroundProperty.Changed.AddClassHandler<HexView>(OnFontRelatedPropertyChanged);
-        DocumentProperty.Changed.AddClassHandler<HexView>(OnDocumentChanged);
-
-        AffectsArrange<HexView>(
-            DocumentProperty,
-            BytesPerLineProperty,
-            ColumnPaddingProperty
-        );
-    }
+    public static readonly StyledProperty<double> ColumnPaddingProperty = AvaloniaProperty.Register<HexView, double>(nameof(ColumnPadding), 5D);
+    
+    /// <summary>
+    /// Dependency property for <see cref="ActualBytesPerLine"/>.
+    /// </summary>
+    public static readonly DirectProperty<HexView, int> ActualBytesPerLineProperty = AvaloniaProperty.RegisterDirect<HexView, int>(nameof(ActualBytesPerLine), o => o.ActualBytesPerLine);
 
     /// <summary>
-    /// Creates a new hex view control.
+    /// Dependency property for <see cref="BytesPerLine"/>.
     /// </summary>
-    public HexView() {
-        this.Columns = new ColumnCollection(this);
-        this._visualLines = new VisualBytesLinesBuffer(this);
-        this.Focusable = true;
-
-        this.EnsureTextProperties();
-
-        this.Layers = new LayerCollection(this) {
-            new ColumnBackgroundLayer(),
-            new CellGroupsLayer(),
-            new TextLayer()
-        };
-        ;
-    }
+    public static readonly StyledProperty<int?> BytesPerLineProperty = AvaloniaProperty.Register<HexView, int?>(nameof(BytesPerLine));
 
     /// <summary>
     /// Dependency property for <see cref="Document"/>.
     /// </summary>
-    public static readonly StyledProperty<IBinaryDocument?> DocumentProperty =
-        AvaloniaProperty.Register<HexView, IBinaryDocument?>(nameof(Document));
+    public static readonly StyledProperty<IBinaryDocument?> DocumentProperty = AvaloniaProperty.Register<HexView, IBinaryDocument?>(nameof(Document));
 
     /// <summary>
     /// Gets or sets the binary document that is currently being displayed.
@@ -74,12 +47,6 @@ public class HexView : Control, ILogicalScrollable {
         get => this.GetValue(DocumentProperty);
         set => this.SetValue(DocumentProperty, value);
     }
-
-    /// <summary>
-    /// Dependency property for <see cref="BytesPerLine"/>.
-    /// </summary>
-    public static readonly StyledProperty<int?> BytesPerLineProperty =
-        AvaloniaProperty.Register<HexView, int?>(nameof(BytesPerLine));
 
     /// <summary>
     /// Gets or sets the fixed amount of bytes per line that should be displayed, or <c>null</c> if the number of
@@ -91,12 +58,6 @@ public class HexView : Control, ILogicalScrollable {
     }
 
     /// <summary>
-    /// Dependency property for <see cref="ActualBytesPerLine"/>.
-    /// </summary>
-    public static readonly DirectProperty<HexView, int> ActualBytesPerLineProperty =
-        AvaloniaProperty.RegisterDirect<HexView, int>(nameof(ActualBytesPerLine), o => o.ActualBytesPerLine);
-
-    /// <summary>
     /// Gets the total amount of bytes per line that are displayed in the control.
     /// </summary>
     public int ActualBytesPerLine {
@@ -106,25 +67,11 @@ public class HexView : Control, ILogicalScrollable {
                 this.InvalidateVisualLines();
         }
     }
-
-    /// <summary>
-    /// Dependency property for <see cref="Columns"/>.
-    /// </summary>
-    public static readonly DirectProperty<HexView, ColumnCollection> ColumnsProperty =
-        AvaloniaProperty.RegisterDirect<HexView, ColumnCollection>(nameof(Columns), o => o.Columns);
-
+    
     /// <summary>
     /// Gets the columns displayed in the hex view.
     /// </summary>
-    public ColumnCollection Columns {
-        get;
-    }
-
-    /// <summary>
-    /// Dependency property for <see cref="ColumnPadding"/>.
-    /// </summary>
-    public static readonly StyledProperty<double> ColumnPaddingProperty =
-        AvaloniaProperty.Register<HexView, double>(nameof(ColumnPadding), 5D);
+    public ColumnCollection Columns { get; }
 
     /// <summary>
     /// Gets the amount of spacing in between columns.
@@ -153,10 +100,7 @@ public class HexView : Control, ILogicalScrollable {
     /// <summary>
     /// Gets the typeface that is used for rendering the text in the hex view.
     /// </summary>
-    public Typeface Typeface {
-        get;
-        private set;
-    }
+    public Typeface Typeface { get; private set; }
 
     /// <summary>
     /// Gets the base foreground brush that is used for rendering the text in the hex view.
@@ -169,10 +113,7 @@ public class HexView : Control, ILogicalScrollable {
     /// <summary>
     /// Gets the text run properties that are used for rendering the text in the hex view.
     /// </summary>
-    public GenericTextRunProperties TextRunProperties {
-        get;
-        private set;
-    }
+    public GenericTextRunProperties TextRunProperties { get; private set; }
 
     /// <summary>
     /// Gets the current lines that are visible.
@@ -242,6 +183,56 @@ public class HexView : Control, ILogicalScrollable {
     /// </summary>
     public BitRange FullyVisibleRange { get; private set; }
 
+    /// <inheritdoc />
+    public event EventHandler? ScrollInvalidated;
+
+    /// <summary>
+    /// Fires when the document in the hex editor has changed.
+    /// </summary>
+    public event EventHandler<DocumentChangedEventArgs>? DocumentChanged;
+    
+    /// <summary>
+    /// Fired when the visual lines are cleared for re-calculating
+    /// </summary>
+    public event EventHandler<EventArgs>? VisualLinesInvalidated;
+
+    private readonly VisualBytesLinesBuffer _visualLines;
+    private Vector _scrollOffset;
+    private Size _extent;
+    private int _actualBytesPerLine;
+
+    static HexView() {
+        FocusableProperty.OverrideDefaultValue<HexView>(true);
+
+        TemplatedControl.FontFamilyProperty.Changed.AddClassHandler<HexView>(OnFontRelatedPropertyChanged);
+        TemplatedControl.FontSizeProperty.Changed.AddClassHandler<HexView>(OnFontRelatedPropertyChanged);
+        TemplatedControl.ForegroundProperty.Changed.AddClassHandler<HexView>(OnFontRelatedPropertyChanged);
+        DocumentProperty.Changed.AddClassHandler<HexView>(OnDocumentChanged);
+
+        AffectsArrange<HexView>(
+            DocumentProperty,
+            BytesPerLineProperty,
+            ColumnPaddingProperty
+        );
+    }
+
+    /// <summary>
+    /// Creates a new hex view control.
+    /// </summary>
+    public HexView() {
+        this.Columns = new ColumnCollection(this);
+        this._visualLines = new VisualBytesLinesBuffer(this);
+        this.Focusable = true;
+
+        this.EnsureTextProperties();
+
+        this.Layers = new LayerCollection(this) {
+            new ColumnBackgroundLayer(),
+            new CellGroupsLayer(),
+            new TextLayer()
+        };
+    }
+
     /// <summary>
     /// Invalidates the line that includes the provided location.
     /// </summary>
@@ -271,6 +262,7 @@ public class HexView : Control, ILogicalScrollable {
     /// </summary>
     public void InvalidateVisualLines() {
         this._visualLines.Clear();
+        this.VisualLinesInvalidated?.Invoke(this, EventArgs.Empty);
         this.InvalidateArrange();
     }
 
@@ -309,21 +301,21 @@ public class HexView : Control, ILogicalScrollable {
         this.ComputeBytesPerLine(finalSize);
         this.UpdateColumnBounds();
         this.UpdateVisualLines(finalSize);
-
         this.Extent = this.Document is not null
             ? new Size(0, Math.Ceiling((double) this.Document.Length / this.ActualBytesPerLine))
             : default;
 
         bool hasResized = finalSize != this.Bounds.Size;
 
-        for (int i = 0; i < this.Layers.Count; i++) {
-            this.Layers[i].Arrange(new Rect(new Point(0, 0), finalSize));
-
-            if (hasResized || (this.Layers[i].UpdateMoments & LayerRenderMoments.NoResizeRearrange) != 0)
-                this.Layers[i].InvalidateVisual();
+        foreach (Layer layer in this.Layers) {
+            layer.Arrange(new Rect(default, finalSize));
+            if (hasResized || (layer.UpdateMoments & LayerRenderMoments.NoResizeRearrange) != 0) {
+                layer.InvalidateVisual();
+            }
         }
 
-        return base.ArrangeOverride(finalSize);
+        return finalSize; // do not call base.ArrangeOverride since it arranges the layers again
+        // return base.ArrangeOverride(finalSize);
     }
 
     private void ComputeBytesPerLine(Size finalSize) {

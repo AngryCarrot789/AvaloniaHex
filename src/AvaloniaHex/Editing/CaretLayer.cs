@@ -191,7 +191,7 @@ public class CaretLayer : Layer {
     public override void Render(DrawingContext context) {
         base.Render(context);
 
-        if (this.HexView is null || !this.HexView.IsFocused)
+        if (this.HexView == null || !this.HexView.IsFocused)
             return;
 
         VisualBytesLine? line = this.HexView.GetVisualLineByLocation(this.Caret.Location);
