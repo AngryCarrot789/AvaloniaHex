@@ -7,20 +7,16 @@ namespace AvaloniaHex.Rendering;
 /// Represents the column rendering the line offsets.
 /// </summary>
 public class OffsetColumn : Column {
-    private Size _minimumSize;
-
-    static OffsetColumn() {
-        IsUppercaseProperty.Changed.AddClassHandler<HexColumn, bool>(OnIsUpperCaseChanged);
-    }
-
-    /// <inheritdoc />
-    public override Size MinimumSize => this._minimumSize;
-
     /// <summary>
     /// Defines the <see cref="IsUppercase"/> property.
     /// </summary>
-    public static readonly StyledProperty<bool> IsUppercaseProperty =
-        AvaloniaProperty.Register<HexColumn, bool>(nameof(IsUppercase), true);
+    public static readonly StyledProperty<bool> IsUppercaseProperty = AvaloniaProperty.Register<HexColumn, bool>(nameof(IsUppercase), true);
+    public static readonly StyledProperty<ulong> AdditionalOffsetProperty = AvaloniaProperty.Register<OffsetColumn, ulong>(nameof(AdditionalOffset));
+    
+    private Size _minimumSize;
+    
+    /// <inheritdoc />
+    public override Size MinimumSize => this._minimumSize;
 
     /// <summary>
     /// Gets or sets a value indicating whether the hexadecimal digits should be rendered in uppercase or not.
@@ -29,8 +25,28 @@ public class OffsetColumn : Column {
         get => this.GetValue(IsUppercaseProperty);
         set => this.SetValue(IsUppercaseProperty, value);
     }
+    
+    /// <summary>
+    /// Gets or sets the additional value added to the actual drawn offset.
+    /// </summary>
+    public ulong AdditionalOffset {
+        get => this.GetValue(AdditionalOffsetProperty);
+        set => this.SetValue(AdditionalOffsetProperty, value);
+    }
+
+    public OffsetColumn() {
+    }
+
+    static OffsetColumn() {
+        IsUppercaseProperty.Changed.AddClassHandler<HexColumn, bool>(OnIsUpperCaseChanged);
+        AdditionalOffsetProperty.Changed.AddClassHandler<HexColumn, ulong>(OnAdditionalOffsetChanged);
+    }
 
     private static void OnIsUpperCaseChanged(HexColumn arg1, AvaloniaPropertyChangedEventArgs<bool> arg2) {
+        arg1.HexView?.InvalidateVisualLines();
+    }
+    
+    private static void OnAdditionalOffsetChanged(HexColumn arg1, AvaloniaPropertyChangedEventArgs<ulong> arg2) {
         arg1.HexView?.InvalidateVisualLines();
     }
 
@@ -50,7 +66,7 @@ public class OffsetColumn : Column {
         if (this.HexView == null)
             throw new InvalidOperationException();
 
-        ulong offset = line.Range.Start.ByteIndex;
+        ulong offset = this.AdditionalOffset + line.Range.Start.ByteIndex;
         string text = this.IsUppercase
             ? $"{offset:X8}:"
             : $"{offset:x8}:";
