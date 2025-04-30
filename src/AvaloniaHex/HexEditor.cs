@@ -142,7 +142,7 @@ public class HexEditor : TemplatedControl {
         this.myScrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
         if (this.myScrollViewer != null)
             this.myScrollViewer.Content = this.HexView;
-        
+
         this.myHeaderContentPresenter = e.NameScope.Find<HeaderControl>("PART_Header");
         if (this.myHeaderContentPresenter != null)
             this.myHeaderContentPresenter.HexEditor = this;
@@ -175,11 +175,11 @@ public class HexEditor : TemplatedControl {
         this.UpdateSelection(this.Caret.Location, false);
         this.OnDocumentChanged(e);
     }
-    
+
     private void OnVisualLinesInvalidated(object? sender, EventArgs e) {
         this.myHeaderContentPresenter?.InvalidateHeaderLines();
     }
-    
+
     private void OnScrollInvalidated(object? sender, EventArgs e) {
         this.myHeaderContentPresenter?.InvalidateHeaderLines();
     }
@@ -200,9 +200,9 @@ public class HexEditor : TemplatedControl {
         if (point.Properties.IsLeftButtonPressed) {
             Point position = point.Position;
 
-            if (this.HexView.GetColumnByPoint(position) is CellBasedColumn column) {
+            if (this.HexView.GetColumnByPoint(position, true) is CellBasedColumn column) {
                 this.Caret.PrimaryColumnIndex = column.Index;
-                if (this.HexView.GetLocationByPoint(position) is { } location) {
+                if (this.HexView.GetLocationByPoint(position, column) is BitLocation location) {
                     // Update selection when holding down the shift key.
                     bool isShiftDown = (e.KeyModifiers & KeyModifiers.Shift) != 0;
                     if (isShiftDown) {
@@ -229,7 +229,7 @@ public class HexEditor : TemplatedControl {
     protected override void OnPointerMoved(PointerEventArgs e) {
         base.OnPointerMoved(e);
 
-        this.Cursor = this.HexView.GetColumnByPoint(e.GetPosition(this)) is { } hoverColumn
+        this.Cursor = this.HexView.GetColumnByPoint(e.GetPosition(this), true) is { } hoverColumn
             ? hoverColumn.Cursor
             : null;
 
@@ -258,14 +258,14 @@ public class HexEditor : TemplatedControl {
     /// <inheritdoc />
     protected override async void OnTextInput(TextInputEventArgs e) {
         base.OnTextInput(e);
-        
+
         if (this.isProcessingTextInput) {
             return;
         }
 
         try {
             this.isProcessingTextInput = true;
-            
+
             // Are we in a writeable document?
             if (this.Document is not { IsReadOnly: false })
                 return;
@@ -313,6 +313,7 @@ public class HexEditor : TemplatedControl {
             bool isShiftDown = (e.KeyModifiers & KeyModifiers.Shift) != 0;
 
             switch (e.Key) {
+                case Key.A when (e.KeyModifiers & (KeyModifiers.Control | KeyModifiers.Shift)) != 0: this.SelectLine(); break;
                 case Key.A when (e.KeyModifiers & KeyModifiers.Control) != 0: this.Selection.SelectAll(); break;
 
                 case Key.C when (e.KeyModifiers & KeyModifiers.Control) != 0: await this.Copy(); break;
@@ -396,6 +397,17 @@ public class HexEditor : TemplatedControl {
         }
         finally {
             this.isProcessingKeyDown = false;
+        }
+    }
+
+    private void SelectLine() {
+        IBinaryDocument? document = this.Document;
+        if (document == null) {
+            this.Selection.Range = default;
+        }
+        else {
+            VisualBytesLine? line = this.HexView.GetVisualLineByLocation(this.Caret.Location);
+            this.Selection.Range = line != null ? line.Range : default;
         }
     }
 
@@ -500,6 +512,10 @@ public class HexEditor : TemplatedControl {
         }
 
         this.Selection.Range = this.Caret.Location.ToSingleByteRange();
+        this._selectionAnchorPoint = null;
+    }
+
+    public void ResetCursorAnchor() {
         this._selectionAnchorPoint = null;
     }
 

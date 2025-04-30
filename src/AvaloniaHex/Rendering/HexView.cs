@@ -479,11 +479,19 @@ public class HexView : Control, ILogicalScrollable {
     /// Gets the column containing the provided point.
     /// </summary>
     /// <param name="point">The point.</param>
+    /// <param name="canIncludePadding">
+    /// When true, adds <c> ColumnPadding / 2.0</c> to the horizontal bounds of the
+    /// columns, such that the mouse can hit the closest column horizontally.
+    /// When false, uses the exact visual bounds of the column, which may be annoying for the user trying
+    /// to select a region when their cursor is 1 pixel off
+    /// </param>
     /// <returns>The point, or <c>null</c> if the location does not fall inside of a column.</returns>
-    public Column? GetColumnByPoint(Point point) {
+    public Column? GetColumnByPoint(Point point, bool canIncludePadding = false) {
+        Thickness padding = canIncludePadding ? new Thickness(this.ColumnPadding / 2.0, 0.0) : default;
         foreach (Column column in this.Columns) {
-            if (column.IsVisible && column.Bounds.Contains(point))
+            if (column.IsVisible && column.Bounds.Inflate(padding).Contains(point)) {
                 return column;
+            }
         }
 
         return null;
@@ -493,12 +501,14 @@ public class HexView : Control, ILogicalScrollable {
     /// Gets the location of the cell under the provided point.
     /// </summary>
     /// <param name="point">The point.</param>
+    /// <param name="canIncludePadding">See <see cref="GetColumnByPoint"/> for more info about this</param>
     /// <returns>The location of the cell, or <c>null</c> if no cell is under the provided point.</returns>
-    public BitLocation? GetLocationByPoint(Point point) {
-        if (this.GetColumnByPoint(point) is not CellBasedColumn column)
-            return null;
+    public BitLocation? GetLocationByPoint(Point point, bool canIncludePadding = false) {
+        if (this.GetColumnByPoint(point, canIncludePadding) is CellBasedColumn column) {
+            return this.GetLocationByPoint(point, column);
+        }
 
-        return this.GetLocationByPoint(point, column);
+        return null;
     }
 
     /// <summary>
@@ -508,10 +518,11 @@ public class HexView : Control, ILogicalScrollable {
     /// <param name="column">The column</param>
     /// <returns>The location of the cell, or <c>null</c> if no cell is under the provided point.</returns>
     public BitLocation? GetLocationByPoint(Point point, CellBasedColumn column) {
-        if (this.GetVisualLineByPoint(point) is not { } line)
-            return null;
+        if (this.GetVisualLineByPoint(point) is VisualBytesLine line) {
+            return column.GetLocationByPoint(line, point);
+        }
 
-        return column.GetLocationByPoint(line, point);
+        return null;
     }
 
     /// <summary>
