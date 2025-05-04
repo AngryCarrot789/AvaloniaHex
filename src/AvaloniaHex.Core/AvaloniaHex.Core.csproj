@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        
         <Title>AvaloniaHex.Core</Title>
         <Description>The core/base library for the hex editor control library</Description>
         <PackageTags>hex editor binary data</PackageTags>
-        <TargetFrameworks>net8.0</TargetFrameworks>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
     </PropertyGroup>
 
 </Project>
