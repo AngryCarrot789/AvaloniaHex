@@ -313,7 +313,9 @@ public class HexEditor : TemplatedControl {
             bool isShiftDown = (e.KeyModifiers & KeyModifiers.Shift) != 0;
 
             switch (e.Key) {
-                case Key.A when (e.KeyModifiers & (KeyModifiers.Control | KeyModifiers.Shift)) != 0: this.SelectLine(); break;
+                case Key.A when (e.KeyModifiers & (KeyModifiers.Control | KeyModifiers.Shift)) == (KeyModifiers.Control | KeyModifiers.Shift): 
+                    this.SelectLine(); 
+                break;
                 case Key.A when (e.KeyModifiers & KeyModifiers.Control) != 0: this.Selection.SelectAll(); break;
 
                 case Key.C when (e.KeyModifiers & KeyModifiers.Control) != 0: await this.Copy(); break;
