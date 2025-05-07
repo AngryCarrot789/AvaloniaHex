@@ -52,12 +52,7 @@ public class MemoryBinaryDocument : IBinaryDocument {
 
     /// <inheritdoc />
     public void ReadBytes(ulong offset, Span<byte> buffer) {
-        if ((int) offset >= 0 && (int) offset <= this._memory.Span.Length && (int) offset + buffer.Length >= 0 && (int) offset + buffer.Length <= this._memory.Span.Length) {
-            this._memory.Span[(int) offset..((int) offset + buffer.Length)].CopyTo(buffer);
-        }
-        else {
-            Debugger.Break();
-        }
+        this._memory.Span[(int) offset..((int) offset + buffer.Length)].CopyTo(buffer);
     }
 
     /// <inheritdoc />
