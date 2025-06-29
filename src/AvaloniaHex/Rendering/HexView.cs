@@ -301,8 +301,6 @@ public class HexView : Control, ILogicalScrollable {
 
     /// <inheritdoc />
     protected override Size ArrangeOverride(Size finalSize) {
-        long timeA = DateTime.Now.Ticks;
-        
         this.ComputeBytesPerLine(finalSize);
         this.UpdateColumnBounds();
         this.UpdateVisualLines(finalSize);
@@ -320,9 +318,6 @@ public class HexView : Control, ILogicalScrollable {
             layer.Arrange(new Rect(default, finalSize));
         }
         
-        double dur = new TimeSpan(DateTime.Now.Ticks - timeA).TotalMilliseconds;
-        Debug.WriteLine($"{DateTime.Now.ToString("HH:mm:ss:fff")} Time to arrange: {Math.Round(dur, 2)} ms");
-
         return finalSize; // do not call base.ArrangeOverride since it arranges the layers again
         // return base.ArrangeOverride(finalSize);
     }
