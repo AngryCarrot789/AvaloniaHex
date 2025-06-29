@@ -47,7 +47,7 @@ public class BinaryColumn : CellBasedColumn {
     }
 
     public override async Task<string?> GetTextFromDocumentAsync(BitRange range) {
-        if (this.HexView?.Document is null)
+        if (this.HexView?.Document == null)
             return null;
 
         byte[] data = new byte[range.ByteLength];
@@ -141,7 +141,7 @@ public class BinaryColumn : CellBasedColumn {
             // Find current segment we're in.
             BitLocation currentLocation = new BitLocation(this._line.Range.Start.ByteIndex + (ulong) byteIndex, bitIndex);
             VisualBytesLineSegment? segment = this._line.FindSegmentContaining(currentLocation);
-            if (segment is null)
+            if (segment == null)
                 return null;
 
             // Stringify the segment.

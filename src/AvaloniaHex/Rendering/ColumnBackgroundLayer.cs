@@ -17,7 +17,7 @@ public class ColumnBackgroundLayer : Layer {
             return;
 
         foreach (Column column in this.HexView.Columns) {
-            if (column.Background is not null || column.Border is not null)
+            if (column.Background != null || column.Border != null)
                 context.DrawRectangle(column.Background, column.Border, column.Bounds);
         }
     }

@@ -15,12 +15,12 @@ public static class CellGeometryBuilder {
     /// <param name="range">The range of the cells to bound.</param>
     /// <returns>The geometry, or <c>null</c> if the range is not visible.</returns>
     public static Geometry? CreateBoundingGeometry(CellBasedColumn column, BitRange range) {
-        if (column.HexView is null || range.IsEmpty)
+        if (column.HexView == null || range.IsEmpty)
             return null;
 
         VisualBytesLine? startLine = column.HexView.GetVisualLineByLocation(range.Start);
         VisualBytesLine? endLine = column.HexView.GetVisualLineByLocation(range.End.PreviousOrZero());
-        if (startLine is null || endLine is null)
+        if (startLine == null || endLine == null)
             return null;
 
         Rect startBounds = column.GetGroupBounds(startLine, range.Start);

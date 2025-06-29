@@ -13,7 +13,7 @@ public class ReadOnlyBitRangeUnion : IReadOnlyBitRangeUnion {
     /// <summary>
     /// The empty union.
     /// </summary>
-    public static readonly ReadOnlyBitRangeUnion Empty = new(new BitRangeUnion());
+    public static readonly ReadOnlyBitRangeUnion Empty = new ReadOnlyBitRangeUnion(new BitRangeUnion());
 
     private readonly BitRangeUnion _union;
 

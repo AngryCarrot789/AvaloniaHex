@@ -32,7 +32,7 @@ public class AsciiColumn : CellBasedColumn {
 
     /// <inheritdoc />
     public override async Task<string?> GetTextFromDocumentAsync(BitRange range) {
-        if (this.HexView?.Document is null)
+        if (this.HexView?.Document == null)
             return null;
 
         byte[] data = new byte[range.ByteLength];
@@ -112,7 +112,7 @@ public class AsciiColumn : CellBasedColumn {
             // Find current segment we're in.
             BitLocation currentLocation = new BitLocation(this._line.Range.Start.ByteIndex + (ulong) textSourceIndex);
             VisualBytesLineSegment? segment = this._line.FindSegmentContaining(currentLocation);
-            if (segment is null)
+            if (segment == null)
                 return null;
 
             // Stringify the segment.

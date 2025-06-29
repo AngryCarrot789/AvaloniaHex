@@ -135,7 +135,7 @@ public sealed class VisualBytesLine {
     /// Updates the visual line with the latest data of the document and reconstructs all line segments.
     /// </summary>
     public void Refresh() {
-        if (this.HexView.Document is null)
+        if (this.HexView.Document == null)
             return;
 
         // Read data

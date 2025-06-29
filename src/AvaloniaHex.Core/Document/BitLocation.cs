@@ -7,12 +7,12 @@ public readonly struct BitLocation : IEquatable<BitLocation>, IComparable<BitLoc
     /// <summary>
     /// The minimum value for a bit location.
     /// </summary>
-    public static readonly BitLocation Minimum = new(0, 0);
+    public static readonly BitLocation Minimum = new BitLocation(0, 0);
 
     /// <summary>
     /// The maximum value for a bit location.
     /// </summary>
-    public static readonly BitLocation Maximum = new(ulong.MaxValue, 7);
+    public static readonly BitLocation Maximum = new BitLocation(ulong.MaxValue, 7);
 
     /// <summary>
     /// Creates a new bit location.
@@ -53,21 +53,21 @@ public readonly struct BitLocation : IEquatable<BitLocation>, IComparable<BitLoc
     /// Creates a single-byte range at the location.
     /// </summary>
     /// <returns>The range.</returns>
-    public BitRange ToSingleByteRange() => new(this.ByteIndex, this.ByteIndex + 1);
+    public BitRange ToSingleByteRange() => new BitRange(this.ByteIndex, this.ByteIndex + 1);
 
     /// <summary>
     /// Adds a number of bytes to the location.
     /// </summary>
     /// <param name="bytes">The byte count.</param>
     /// <returns>The new location.</returns>
-    public BitLocation AddBytes(ulong bytes) => new(this.ByteIndex + bytes, this.BitIndex);
+    public BitLocation AddBytes(ulong bytes) => new BitLocation(this.ByteIndex + bytes, this.BitIndex);
 
     /// <summary>
     /// Subtracts a number of bytes to the location.
     /// </summary>
     /// <param name="bytes">The byte count.</param>
     /// <returns>The new location.</returns>
-    public BitLocation SubtractBytes(ulong bytes) => new(this.ByteIndex - bytes, this.BitIndex);
+    public BitLocation SubtractBytes(ulong bytes) => new BitLocation(this.ByteIndex - bytes, this.BitIndex);
 
     /// <summary>
     /// Adds a number of bits to the location.
@@ -168,7 +168,7 @@ public readonly struct BitLocation : IEquatable<BitLocation>, IComparable<BitLoc
     /// Aligns the location down to the lower byte offset.
     /// </summary>
     /// <returns>The aligned location.</returns>
-    public BitLocation AlignDown() => new(this.ByteIndex, 0);
+    public BitLocation AlignDown() => new BitLocation(this.ByteIndex, 0);
 
     /// <summary>
     /// Aligns the location up to the next byte offset.

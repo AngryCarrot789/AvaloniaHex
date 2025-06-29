@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia;
 using Avalonia.Controls;
@@ -123,7 +124,7 @@ public class HexView : Control, ILogicalScrollable {
     /// <summary>
     /// Gets a collection of line transformers that are applied to each line in the hex view.
     /// </summary>
-    public ObservableCollection<ILineTransformer> LineTransformers { get; } = new();
+    public ObservableCollection<ILineTransformer> LineTransformers { get; } = new ObservableCollection<ILineTransformer>();
 
     /// <summary>
     /// Gets a collection of render layers in the hex view.
@@ -159,7 +160,7 @@ public class HexView : Control, ILogicalScrollable {
         set => this.ScrollOffset = value;
     }
 
-    Size IScrollable.Viewport => new(0, 1);
+    Size IScrollable.Viewport => new Size(0, 1);
 
     bool ILogicalScrollable.CanHorizontallyScroll { get; set; } = false;
 
@@ -168,10 +169,10 @@ public class HexView : Control, ILogicalScrollable {
     bool ILogicalScrollable.IsLogicalScrollEnabled => true;
 
     /// <inheritdoc />
-    public Size ScrollSize => new(0, 1);
+    public Size ScrollSize => new Size(0, 1);
 
     /// <inheritdoc />
-    public Size PageScrollSize => new(0, this.VisualLines.Count);
+    public Size PageScrollSize => new Size(0, this.VisualLines.Count);
 
     /// <summary>
     /// Gets the binary range that is currently visible in the view.
@@ -239,7 +240,7 @@ public class HexView : Control, ILogicalScrollable {
     /// <param name="location">The location.</param>
     public void InvalidateVisualLine(BitLocation location) {
         VisualBytesLine? line = this.GetVisualLineByLocation(location);
-        if (line is not null)
+        if (line != null)
             this.InvalidateVisualLine(line);
     }
 
@@ -278,8 +279,10 @@ public class HexView : Control, ILogicalScrollable {
             line.Invalidate();
 
         for (int i = 0; i < this.Layers.Count; i++) {
-            if ((this.Layers[i].UpdateMoments & LayerRenderMoments.LineInvalidate) != 0)
-                this.Layers[i].InvalidateVisual();
+            Layer layer = this.Layers[i];
+            if ((layer.UpdateMoments & LayerRenderMoments.LineInvalidate) != 0) {
+                layer.InvalidateVisual();
+            }
         }
 
         this.InvalidateArrange();
@@ -298,21 +301,27 @@ public class HexView : Control, ILogicalScrollable {
 
     /// <inheritdoc />
     protected override Size ArrangeOverride(Size finalSize) {
+        long timeA = DateTime.Now.Ticks;
+        
         this.ComputeBytesPerLine(finalSize);
         this.UpdateColumnBounds();
         this.UpdateVisualLines(finalSize);
-        this.Extent = this.Document is not null
+        this.Extent = this.Document != null
             ? new Size(0, Math.Ceiling((double) this.Document.Length / this.ActualBytesPerLine))
             : default;
 
         bool hasResized = finalSize != this.Bounds.Size;
 
         foreach (Layer layer in this.Layers) {
-            layer.Arrange(new Rect(default, finalSize));
             if (hasResized || (layer.UpdateMoments & LayerRenderMoments.NoResizeRearrange) != 0) {
                 layer.InvalidateVisual();
             }
+            
+            layer.Arrange(new Rect(default, finalSize));
         }
+        
+        double dur = new TimeSpan(DateTime.Now.Ticks - timeA).TotalMilliseconds;
+        Debug.WriteLine($"{DateTime.Now.ToString("HH:mm:ss:fff")} Time to arrange: {Math.Round(dur, 2)} ms");
 
         return finalSize; // do not call base.ArrangeOverride since it arranges the layers again
         // return base.ArrangeOverride(finalSize);
@@ -373,7 +382,7 @@ public class HexView : Control, ILogicalScrollable {
 
     private void UpdateVisualLines(Size finalSize) {
         // No columns or no document means we need a completely empty control.
-        if (this.Columns.Count == 0 || this.Document is null) {
+        if (this.Columns.Count == 0 || this.Document == null) {
             this._visualLines.Clear();
 
             this.VisibleRange = default;
@@ -568,11 +577,11 @@ public class HexView : Control, ILogicalScrollable {
         view.InvalidateVisualLines();
 
         IBinaryDocument? oldDocument = (IBinaryDocument?) arg2.OldValue;
-        if (oldDocument is not null)
+        if (oldDocument != null)
             oldDocument.Changed -= view.DocumentOnChanged;
 
         IBinaryDocument? newDocument = (IBinaryDocument?) arg2.NewValue;
-        if (newDocument is not null)
+        if (newDocument != null)
             newDocument.Changed += view.DocumentOnChanged;
 
         view.OnDocumentChanged(new DocumentChangedEventArgs(
@@ -693,7 +702,7 @@ public class HexView : Control, ILogicalScrollable {
         }
 
         private static void AssertNoOwner(Layer item) {
-            if (item.HexView is not null)
+            if (item.HexView != null)
                 throw new InvalidOperationException("Layer is already added to another hex view.");
         }
 
@@ -813,7 +822,7 @@ public class HexView : Control, ILogicalScrollable {
         }
 
         private static void AssertNoOwner(Column column) {
-            if (column.HexView is not null)
+            if (column.HexView != null)
                 throw new ArgumentException("Column is already added to another hex view.");
         }
 
@@ -856,7 +865,7 @@ public class HexView : Control, ILogicalScrollable {
         /// Creates a new enumerator for the collection.
         /// </summary>
         /// <returns>The enumerator.</returns>
-        public new Enumerator GetEnumerator() => new(this);
+        public new Enumerator GetEnumerator() => new Enumerator(this);
 
         /// <summary>
         /// Represents a column enumerator that enumerates all columns in a hex view from a left-to-right order.

@@ -195,7 +195,7 @@ public class CaretLayer : Layer {
             return;
 
         VisualBytesLine? line = this.HexView.GetVisualLineByLocation(this.Caret.Location);
-        if (line is null)
+        if (line == null)
             return;
 
         for (int i = 0; i < this.HexView.Columns.Count; i++) {

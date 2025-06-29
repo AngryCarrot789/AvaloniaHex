@@ -13,7 +13,7 @@ public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange> {
     /// <inheritdoc />
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-    private readonly ObservableCollection<BitRange> _ranges = new();
+    private readonly ObservableCollection<BitRange> _ranges = new ObservableCollection<BitRange>();
 
     /// <summary>
     /// Creates a new empty union.
@@ -33,7 +33,7 @@ public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange> {
     }
 
     /// <inheritdoc />
-    public BitRange EnclosingRange => this._ranges.Count == 0 ? BitRange.Empty : new(this._ranges[0].Start, this._ranges[^1].End);
+    public BitRange EnclosingRange => this._ranges.Count == 0 ? BitRange.Empty : new BitRange(this._ranges[0].Start, this._ranges[^1].End);
 
     /// <inheritdoc />
     public bool IsFragmented => this._ranges.Count > 1;
@@ -166,7 +166,7 @@ public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange> {
     }
 
     /// <inheritdoc />
-    public Enumerator GetEnumerator() => new(this);
+    public Enumerator GetEnumerator() => new Enumerator(this);
 
     IEnumerator<BitRange> IEnumerable<BitRange>.GetEnumerator() => this.GetEnumerator();
 
@@ -176,7 +176,7 @@ public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange> {
     /// Wraps the union into a <see cref="ReadOnlyBitRangeUnion"/>.
     /// </summary>
     /// <returns>The resulting read-only union.</returns>
-    public ReadOnlyBitRangeUnion AsReadOnly() => new(this);
+    public ReadOnlyBitRangeUnion AsReadOnly() => new ReadOnlyBitRangeUnion(this);
 
     private enum SearchResult {
         PresentBeforeIndex,

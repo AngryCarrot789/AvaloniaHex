@@ -9,7 +9,7 @@ namespace AvaloniaHex.Rendering;
 /// Represents a single column in a hex view.
 /// </summary>
 public abstract class Column : Visual {
-    internal static readonly Cursor IBeamCursor = new(StandardCursorType.Ibeam);
+    internal static readonly Cursor IBeamCursor = new Cursor(StandardCursorType.Ibeam);
 
     private GenericTextRunProperties? _textRunProperties;
 
@@ -140,7 +140,7 @@ public abstract class Column : Visual {
     }
 
     private static void OnVisibleChanged(Column arg1, AvaloniaPropertyChangedEventArgs arg2) {
-        if (arg1.HexView is null)
+        if (arg1.HexView == null)
             return;
 
         arg1.HexView.InvalidateVisualLines();

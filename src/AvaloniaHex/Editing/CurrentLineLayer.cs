@@ -87,7 +87,7 @@ public class CurrentLineLayer : Layer {
             return;
 
         VisualBytesLine? line = this.HexView.GetVisualLineByLocation(this.Caret.Location);
-        if (line is null)
+        if (line == null)
             return;
 
         if (this.Selection.Range.ByteLength <= 1)

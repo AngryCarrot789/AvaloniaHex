@@ -271,7 +271,7 @@ public class HexEditor : TemplatedControl {
                 return;
 
             // Do we have any text to write into a column?
-            if (string.IsNullOrEmpty(e.Text) || this.Caret.PrimaryColumn is null)
+            if (string.IsNullOrEmpty(e.Text) || this.Caret.PrimaryColumn == null)
                 return;
 
             if (this.Caret.Mode == EditingMode.Insert) {

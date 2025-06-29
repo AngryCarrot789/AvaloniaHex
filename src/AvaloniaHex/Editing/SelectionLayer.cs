@@ -135,7 +135,7 @@ public class SelectionLayer : Layer {
 
     private void DrawSelection(DrawingContext context, CellBasedColumn column, BitRange range) {
         Geometry? geometry = CellGeometryBuilder.CreateBoundingGeometry(column, range);
-        if (geometry is null)
+        if (geometry == null)
             return;
 
         if (this._caret.PrimaryColumnIndex == column.Index)

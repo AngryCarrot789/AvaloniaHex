@@ -5,8 +5,8 @@ namespace AvaloniaHex.Rendering;
 
 internal sealed class VisualBytesLinesBuffer : IReadOnlyList<VisualBytesLine> {
     private readonly HexView _owner;
-    private readonly Stack<VisualBytesLine> _pool = new();
-    private readonly List<VisualBytesLine> _activeLines = new();
+    private readonly Stack<VisualBytesLine> _pool = new Stack<VisualBytesLine>();
+    private readonly List<VisualBytesLine> _activeLines = new List<VisualBytesLine>();
 
     public VisualBytesLinesBuffer(HexView owner) {
         this._owner = owner;
@@ -30,8 +30,7 @@ internal sealed class VisualBytesLinesBuffer : IReadOnlyList<VisualBytesLine> {
     }
 
     public IEnumerable<VisualBytesLine> GetVisualLinesByRange(BitRange range) {
-        for (int i = 0; i < this._activeLines.Count; i++) {
-            VisualBytesLine line = this._activeLines[i];
+        foreach (VisualBytesLine line in this._activeLines) {
             if (line.VirtualRange.OverlapsWith(range))
                 yield return line;
 
@@ -65,7 +64,7 @@ internal sealed class VisualBytesLinesBuffer : IReadOnlyList<VisualBytesLine> {
         }
 
         // We didn't find any line for the location, add it to the end.
-        if (newLine is null) {
+        if (newLine == null) {
             newLine = this.Rent(virtualRange);
             this._activeLines.Add(newLine);
         }

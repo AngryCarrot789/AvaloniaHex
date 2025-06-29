@@ -43,7 +43,7 @@ public class CellGroupsLayer : Layer {
     /// <summary>
     /// Gets a collection of background brushes that each vertical cell group is rendered with.
     /// </summary>
-    public ObservableCollection<IBrush?> Backgrounds { get; } = new();
+    public ObservableCollection<IBrush?> Backgrounds { get; } = new ObservableCollection<IBrush?>();
 
     static CellGroupsLayer() {
         AffectsRender<CellGroupsLayer>(
@@ -60,7 +60,7 @@ public class CellGroupsLayer : Layer {
     public override void Render(DrawingContext context) {
         base.Render(context);
 
-        if (this.HexView == null || this.Border is null || this.HexView.VisualLines.Count == 0)
+        if (this.HexView == null || this.Border == null || this.HexView.VisualLines.Count == 0)
             return;
 
         foreach (Column c in this.HexView.Columns) {
@@ -87,7 +87,7 @@ public class CellGroupsLayer : Layer {
 
             if (this.Backgrounds.Count > 0) {
                 IBrush? background = this.Backgrounds[groupIndex % this.Backgrounds.Count];
-                if (background is not null)
+                if (background != null)
                     context.FillRectangle(background, new Rect(left, 0, right - left, column.Bounds.Height));
             }
 

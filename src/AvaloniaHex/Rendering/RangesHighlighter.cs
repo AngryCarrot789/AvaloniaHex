@@ -9,7 +9,7 @@ public class RangesHighlighter : ByteHighlighter {
     /// <summary>
     /// Gets the bit ranges that should be highlighted in the document.
     /// </summary>
-    public BitRangeUnion Ranges { get; } = new();
+    public BitRangeUnion Ranges { get; } = new BitRangeUnion();
 
     /// <inheritdoc />
     protected override bool IsHighlighted(HexView hexView, VisualBytesLine line, BitLocation location) {

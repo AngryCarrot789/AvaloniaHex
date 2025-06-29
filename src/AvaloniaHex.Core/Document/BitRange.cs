@@ -10,7 +10,7 @@ public readonly struct BitRange : IEquatable<BitRange> {
     /// <summary>
     /// Represents the empty range.
     /// </summary>
-    public static readonly BitRange Empty = new();
+    public static readonly BitRange Empty = new BitRange();
 
     /// <summary>
     /// Creates a new bit range.
@@ -85,19 +85,19 @@ public readonly struct BitRange : IEquatable<BitRange> {
     /// </summary>
     /// <param name="other">The other range.</param>
     /// <returns><c>true</c> if the range overlaps, <c>false</c> otherwise.</returns>
-    public bool OverlapsWith(BitRange other)
-        =>
-            this.Contains(other.Start)
-           || this.Contains(other.End.PreviousOrZero())
-           || other.Contains(this.Start)
-           || other.Contains(this.End.PreviousOrZero());
+    public bool OverlapsWith(BitRange other) {
+        return this.Contains(other.Start) ||
+               this.Contains(other.End.PreviousOrZero()) ||
+               other.Contains(this.Start) ||
+               other.Contains(this.End.PreviousOrZero());
+    }
 
     /// <summary>
     /// Extends the range to the provided location.
     /// </summary>
     /// <param name="location">The location to extend to.</param>
     /// <returns>The extended range.</returns>
-    public BitRange ExtendTo(BitLocation location) => new(this.Start.Min(location), this.End.Max(location));
+    public BitRange ExtendTo(BitLocation location) => new BitRange(this.Start.Min(location), this.End.Max(location));
 
     /// <summary>
     /// Restricts the range to the provided range.

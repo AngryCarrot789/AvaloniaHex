@@ -48,7 +48,7 @@ public class Selection {
     /// Selects the entire document.
     /// </summary>
     public void SelectAll() {
-        this.Range = this.HexView.Document is not null
+        this.Range = this.HexView.Document != null
             ? new BitRange(0, this.HexView.Document.Length)
             : default;
     }

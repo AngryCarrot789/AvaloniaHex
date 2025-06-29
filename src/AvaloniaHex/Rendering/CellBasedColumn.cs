@@ -94,7 +94,7 @@ public abstract class CellBasedColumn : Column {
     /// <returns><c>true</c> if the document was changed, <c>false</c> otherwise.</returns>
     public async Task<(bool Handled, BitLocation NewLocation)> HandleTextInput(BitLocation location, string input, EditingMode mode) {
         IBinaryDocument? document = this.HexView?.Document;
-        if (document is null)
+        if (document == null)
             return (false, location);
 
         // Pre-process text (e.g., remove spaces etc.)

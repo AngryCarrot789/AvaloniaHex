@@ -60,7 +60,7 @@ public sealed class Caret {
         set {
             CellBasedColumn? primaryColumn = this.PrimaryColumn;
 
-            if (primaryColumn is null || this.HexView.Document is not { ValidRanges.EnclosingRange: var enclosingRange }) {
+            if (primaryColumn == null || this.HexView.Document is not { ValidRanges.EnclosingRange: var enclosingRange }) {
                 // We have no column or document to select bytes in...
                 value = default;
             }
@@ -154,7 +154,7 @@ public sealed class Caret {
     /// Moves the caret to the end of the current line in the hex editor.
     /// </summary>
     public void GoToEndOfLine() {
-        if (this.HexView.Document is null)
+        if (this.HexView.Document == null)
             return;
 
         ulong bytesPerLine = (ulong) this.HexView.ActualBytesPerLine;
@@ -186,7 +186,7 @@ public sealed class Caret {
     /// </summary>
     /// <param name="byteCount">The number of bytes to move.</param>
     public void GoBackward(ulong byteCount) {
-        if (this.HexView.Document is null || this.PrimaryColumn is null)
+        if (this.HexView.Document == null || this.PrimaryColumn == null)
             return;
 
         // Note: We cannot use BitLocation.Clamp due to unsigned overflow that may happen.
@@ -219,7 +219,7 @@ public sealed class Caret {
     /// </summary>
     /// <param name="byteCount">The number of bytes to move.</param>
     public void GoForward(ulong byteCount) {
-        if (this.HexView.Document is not { } document || this.PrimaryColumn is null)
+        if (this.HexView.Document is not { } document || this.PrimaryColumn == null)
             return;
 
         // Note: We cannot use BitLocation.Clamp due to unsigned overflow that may happen.
