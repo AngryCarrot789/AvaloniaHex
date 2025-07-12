@@ -38,15 +38,15 @@ public class OffsetColumn : Column {
     }
 
     static OffsetColumn() {
-        IsUppercaseProperty.Changed.AddClassHandler<HexColumn, bool>(OnIsUpperCaseChanged);
-        AdditionalOffsetProperty.Changed.AddClassHandler<HexColumn, ulong>(OnAdditionalOffsetChanged);
+        IsUppercaseProperty.Changed.AddClassHandler<OffsetColumn, bool>(OnIsUpperCaseChanged);
+        AdditionalOffsetProperty.Changed.AddClassHandler<OffsetColumn, ulong>(OnAdditionalOffsetChanged);
     }
 
-    private static void OnIsUpperCaseChanged(HexColumn arg1, AvaloniaPropertyChangedEventArgs<bool> arg2) {
+    private static void OnIsUpperCaseChanged(OffsetColumn arg1, AvaloniaPropertyChangedEventArgs<bool> arg2) {
         arg1.HexView?.InvalidateVisualLines();
     }
     
-    private static void OnAdditionalOffsetChanged(HexColumn arg1, AvaloniaPropertyChangedEventArgs<ulong> arg2) {
+    private static void OnAdditionalOffsetChanged(OffsetColumn arg1, AvaloniaPropertyChangedEventArgs<ulong> arg2) {
         arg1.HexView?.InvalidateVisualLines();
     }
 

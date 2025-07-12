@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia;
 using Avalonia.Controls;
@@ -148,6 +147,12 @@ public class HexView : Control, ILogicalScrollable {
     public Vector ScrollOffset {
         get => this._scrollOffset;
         set {
+            if (!this.canVerticallyScroll)
+                value = default;
+
+            if (this._scrollOffset == value)
+                return;
+            
             this._scrollOffset = value;
             this.InvalidateArrange();
             ((ILogicalScrollable) this).RaiseScrollInvalidated(EventArgs.Empty);
@@ -164,7 +169,16 @@ public class HexView : Control, ILogicalScrollable {
 
     bool ILogicalScrollable.CanHorizontallyScroll { get; set; } = false;
 
-    bool ILogicalScrollable.CanVerticallyScroll { get; set; } = true;
+    public bool CanVerticallyScroll {
+        get => this.canVerticallyScroll;
+        set {
+            if (!value) {
+                this.ScrollOffset = default;
+            }
+            
+            this.canVerticallyScroll = value;
+        }
+    }
 
     bool ILogicalScrollable.IsLogicalScrollEnabled => true;
 
@@ -201,6 +215,7 @@ public class HexView : Control, ILogicalScrollable {
     private Vector _scrollOffset;
     private Size _extent;
     private int _actualBytesPerLine;
+    private bool canVerticallyScroll = true;
 
     static HexView() {
         FocusableProperty.OverrideDefaultValue<HexView>(true);
@@ -535,6 +550,9 @@ public class HexView : Control, ILogicalScrollable {
     /// <param name="location">The location to scroll to.</param>
     /// <returns><c>true</c> if the scroll offset has changed, <c>false</c> otherwise.</returns>
     public bool BringIntoView(BitLocation location) {
+        if (!this.canVerticallyScroll)
+            return false;
+        
         if (location.ByteIndex >= this.Document?.Length + 1 || this.FullyVisibleRange.Contains(location) || this.ActualBytesPerLine == 0)
             return false;
 
