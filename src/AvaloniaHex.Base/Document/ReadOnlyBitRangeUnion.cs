@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 
-namespace AvaloniaHex.Document;
+namespace AvaloniaHex.Base.Document;
 
 /// <summary>
 /// Represents a read-only disjoint union of binary ranges in a document.

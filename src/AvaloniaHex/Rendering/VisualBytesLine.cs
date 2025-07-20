@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Media.TextFormatting;
-using AvaloniaHex.Document;
+using AvaloniaHex.Base.Document;
 
 namespace AvaloniaHex.Rendering;
 

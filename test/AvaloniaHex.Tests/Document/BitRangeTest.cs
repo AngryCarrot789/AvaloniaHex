@@ -1,4 +1,4 @@
-using AvaloniaHex.Document;
+using AvaloniaHex.Base.Document;
 
 namespace AvaloniaHex.Tests.Document;
 

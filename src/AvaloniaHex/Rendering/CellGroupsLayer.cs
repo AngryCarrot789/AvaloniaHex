@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Media;
-using AvaloniaHex.Document;
+using AvaloniaHex.Base.Document;
 
 namespace AvaloniaHex.Rendering;
 

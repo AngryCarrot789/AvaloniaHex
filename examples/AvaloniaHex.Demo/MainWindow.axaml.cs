@@ -11,8 +11,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
-using AvaloniaHex.Document;
-using AvaloniaHex.Editing;
+using AvaloniaHex.Base.Document;
 using AvaloniaHex.Rendering;
 
 namespace AvaloniaHex.Demo

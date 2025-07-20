@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 
-namespace AvaloniaHex.Document;
+namespace AvaloniaHex.Base.Document;
 
 /// <summary>
 /// Represents a disjoint union of binary ranges.
@@ -79,8 +79,8 @@ public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange>
                 return;
 
             _ranges[i] = _ranges[i]
-                .ExtendTo(_ranges[i + 1].Start)
-                .ExtendTo(_ranges[i + 1].End);
+                                  .ExtendTo(_ranges[i + 1].Start)
+                                  .ExtendTo(_ranges[i + 1].End);
 
             _ranges.RemoveAt(i + 1);
             i--;

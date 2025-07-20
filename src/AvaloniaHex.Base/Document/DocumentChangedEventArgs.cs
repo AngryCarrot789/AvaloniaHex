@@ -1,4 +1,4 @@
-namespace AvaloniaHex.Document;
+namespace AvaloniaHex.Base.Document;
 
 /// <summary>
 /// Describes a change of documents in a hex view or editor.

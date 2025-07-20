@@ -1,6 +1,6 @@
 using System.IO.MemoryMappedFiles;
 
-namespace AvaloniaHex.Document;
+namespace AvaloniaHex.Base.Document;
 
 /// <summary>
 /// Represents a binary document that is backed by a file that is mapped into memory.

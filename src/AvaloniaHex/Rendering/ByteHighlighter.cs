@@ -1,5 +1,5 @@
 using Avalonia.Media;
-using AvaloniaHex.Document;
+using AvaloniaHex.Base.Document;
 
 namespace AvaloniaHex.Rendering;
 

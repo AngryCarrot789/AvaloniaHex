@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace AvaloniaHex.Document;
+namespace AvaloniaHex.Base.Document;
 
 /// <summary>
 /// Represents a binary document that can be dynamically resized.

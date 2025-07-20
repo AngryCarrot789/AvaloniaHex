@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AvaloniaHex.Document;
+using AvaloniaHex.Base.Document;
 
 namespace AvaloniaHex.Demo;
 

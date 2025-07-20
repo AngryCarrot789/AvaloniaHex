@@ -25,6 +25,9 @@ public class OffsetColumn : Column
     /// </summary>
     public static readonly StyledProperty<bool> IsUppercaseProperty =
         AvaloniaProperty.Register<OffsetColumn, bool>(nameof(IsUppercase), true);
+    
+    public static readonly StyledProperty<ulong> AdditionalOffsetProperty =
+        AvaloniaProperty.Register<OffsetColumn, ulong>(nameof(AdditionalOffset), 0UL);
 
     /// <summary>
     /// Gets or sets a value indicating whether the hexadecimal digits should be rendered in uppercase or not.
@@ -33,6 +36,12 @@ public class OffsetColumn : Column
     {
         get => GetValue(IsUppercaseProperty);
         set => SetValue(IsUppercaseProperty, value);
+    }
+    
+    public ulong AdditionalOffset
+    {
+        get => GetValue(AdditionalOffsetProperty);
+        set => SetValue(AdditionalOffsetProperty, value);
     }
 
     private static void OnIsUpperCaseChanged(OffsetColumn arg1, AvaloniaPropertyChangedEventArgs<bool> arg2)
@@ -60,7 +69,12 @@ public class OffsetColumn : Column
         if (HexView is null)
             throw new InvalidOperationException();
 
-        return CreateTextLine(FormatOffset(line.Range.Start.ByteIndex));
+        ulong trueOffset = line.Range.Start.ByteIndex;
+        ulong visualOffset = AdditionalOffset + trueOffset;
+        if (visualOffset < trueOffset) 
+            visualOffset = ulong.MaxValue;
+        
+        return CreateTextLine(FormatOffset(visualOffset));
     }
 
     /// <summary>

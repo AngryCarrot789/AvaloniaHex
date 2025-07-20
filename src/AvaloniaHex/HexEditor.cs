@@ -4,7 +4,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using AvaloniaHex.Document;
+using Avalonia.Threading;
+using AvaloniaHex.Base.Document;
 using AvaloniaHex.Editing;
 using AvaloniaHex.Rendering;
 
@@ -559,7 +560,10 @@ public class HexEditor : TemplatedControl
     protected override void OnGotFocus(GotFocusEventArgs e)
     {
         base.OnGotFocus(e);
-        HexView.Focus();
         e.Handled = true;
+        
+        // Using dispatcher here prevents external focus managers having an
+        // inconsistent state. Focusing another element in OnGotFocus is a bad idea
+        Dispatcher.UIThread.InvokeAsync(() => HexView.Focus(), DispatcherPriority.Background);
     }
 }

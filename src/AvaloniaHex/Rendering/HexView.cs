@@ -7,7 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
-using AvaloniaHex.Document;
+using AvaloniaHex.Base.Document;
 
 namespace AvaloniaHex.Rendering;
 
@@ -291,7 +291,7 @@ public class HexView : Control, ILogicalScrollable
 
     bool ILogicalScrollable.CanHorizontallyScroll { get; set; } = false;
 
-    bool ILogicalScrollable.CanVerticallyScroll { get; set; } = true;
+    public bool CanVerticallyScroll { get; set; } = true;
 
     bool ILogicalScrollable.IsLogicalScrollEnabled => true;
 

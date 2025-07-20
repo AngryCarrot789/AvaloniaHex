@@ -1,5 +1,5 @@
 using System.Collections;
-using AvaloniaHex.Document;
+using AvaloniaHex.Base.Document;
 
 namespace AvaloniaHex.Rendering;
 

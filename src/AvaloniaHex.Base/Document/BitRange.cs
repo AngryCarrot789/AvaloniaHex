@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace AvaloniaHex.Document;
+namespace AvaloniaHex.Base.Document;
 
 /// <summary>
 /// Represents a bit range within a binary document.
