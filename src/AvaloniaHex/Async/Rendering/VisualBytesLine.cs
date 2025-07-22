@@ -154,10 +154,14 @@ public sealed class VisualBytesLine {
         BitRangeUnion union = new BitRangeUnion();
         document.ReadAvailableBytesOrRequest(this.Range.Start.ByteIndex, readBuffer, union);
         dstDataSpan.Clear();
+
+        ulong lineOffset = this.Range.Start.ByteIndex;
         foreach (BitRange range in union) {
+            Debug.Assert(range.Start.ByteIndex >= lineOffset);
+            
             int length = (int) range.ByteLength;
             // int offset = (int) (this.Range.Start.ByteIndex - range.Start.ByteIndex);
-            for (int i = 0, offset = (int) range.Start.ByteIndex; i < length; i++) {
+            for (int i = 0, offset = (int) (range.Start.ByteIndex - lineOffset); i < length; i++) {
                 dstDataSpan[i + offset] = readBuffer[i];
             }
         }
