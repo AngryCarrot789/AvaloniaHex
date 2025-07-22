@@ -195,8 +195,7 @@ public class AsyncHexView : Control, ILogicalScrollable {
     /// Gets or sets the scroll size, in logical units
     /// </summary>
     public Size ScrollSize {
-        get => new Size(0, 1);
-        // get => this.GetValue(ScrollSizeProperty);
+        get => this.GetValue(ScrollSizeProperty);
         set => this.SetValue(ScrollSizeProperty, value);
     }
 
