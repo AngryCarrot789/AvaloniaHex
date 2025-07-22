@@ -10,8 +10,7 @@ public record struct BinaryDocumentChange(BinaryDocumentChangeType Type, BitRang
 /// <summary>
 /// Provides members describing the possible actions that can be applied to a document.
 /// </summary>
-public enum BinaryDocumentChangeType
-{
+public enum BinaryDocumentChangeType {
     /// <summary>
     /// Indicates the document was modified in-place.
     /// </summary>

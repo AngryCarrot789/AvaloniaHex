@@ -9,8 +9,19 @@ namespace AvaloniaHex.Base.Document;
 /// Represents a disjoint union of binary ranges.
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
-public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange>
-{
+public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange> {
+    /// <inheritdoc />
+    public BitRange EnclosingRange => this._ranges.Count == 0 ? BitRange.Empty : new(this._ranges[0].Start, this._ranges[^1].End);
+
+    /// <inheritdoc />
+    public bool IsFragmented => this._ranges.Count > 1;
+
+    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
+    public int Count => this._ranges.Count;
+
+    /// <inheritdoc />
+    public bool IsReadOnly => false;
+
     /// <inheritdoc />
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
@@ -19,9 +30,8 @@ public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange>
     /// <summary>
     /// Creates a new empty union.
     /// </summary>
-    public BitRangeUnion()
-    {
-        _ranges.CollectionChanged += (sender, args) => CollectionChanged?.Invoke(this, args);
+    public BitRangeUnion() {
+        this._ranges.CollectionChanged += (sender, args) => this.CollectionChanged?.Invoke(this, args);
     }
 
     /// <summary>
@@ -29,127 +39,97 @@ public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange>
     /// </summary>
     /// <param name="ranges">The ranges to unify.</param>
     public BitRangeUnion(IEnumerable<BitRange> ranges)
-        : this()
-    {
-        foreach (var range in ranges)
-            Add(range);
+        : this() {
+        foreach (BitRange range in ranges)
+            this.Add(range);
     }
 
-    /// <inheritdoc />
-    public BitRange EnclosingRange => _ranges.Count == 0 ? BitRange.Empty : new(_ranges[0].Start, _ranges[^1].End);
-
-    /// <inheritdoc />
-    public bool IsFragmented => _ranges.Count > 1;
-
-    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
-    public int Count => _ranges.Count;
-
-    /// <inheritdoc />
-    public bool IsReadOnly => false;
-
-    private (SearchResult Result, int Index) FindFirstOverlappingRange(BitRange range)
-    {
+    private (SearchResult Result, int Index) FindFirstOverlappingRange(BitRange range) {
         // TODO: binary search
 
         range = new BitRange(range.Start, range.End.NextOrMax());
-        for (int i = 0; i < _ranges.Count; i++)
-        {
-            var candidate = _ranges[i];
-            if (candidate.ExtendTo(candidate.End.NextOrMax()).OverlapsWith(range))
-            {
+        for (int i = 0; i < this._ranges.Count; i++) {
+            BitRange candidate = this._ranges[i];
+            if (candidate.ExtendTo(candidate.End.NextOrMax()).OverlapsWith(range)) {
                 if (candidate.Start >= range.Start)
                     return (SearchResult.PresentAfterIndex, i);
                 return (SearchResult.PresentBeforeIndex, i);
             }
 
-            if (candidate.Start > range.End)
-            {
+            if (candidate.Start > range.End) {
                 return (SearchResult.NotPresentAtIndex, i);
             }
         }
 
-        return (SearchResult.NotPresentAtIndex, _ranges.Count);
+        return (SearchResult.NotPresentAtIndex, this._ranges.Count);
     }
 
-    private void MergeRanges(int startIndex)
-    {
-        for (int i = startIndex; i < _ranges.Count - 1; i++)
-        {
-            if (!_ranges[i].ExtendTo(_ranges[i].End.Next()).OverlapsWith(_ranges[i + 1]))
+    private void MergeRanges(int startIndex) {
+        for (int i = startIndex; i < this._ranges.Count - 1; i++) {
+            if (!this._ranges[i].ExtendTo(this._ranges[i].End.Next()).OverlapsWith(this._ranges[i + 1]))
                 return;
 
-            _ranges[i] = _ranges[i]
-                                  .ExtendTo(_ranges[i + 1].Start)
-                                  .ExtendTo(_ranges[i + 1].End);
+            this._ranges[i] = this._ranges[i].ExtendTo(this._ranges[i + 1].Start).ExtendTo(this._ranges[i + 1].End);
 
-            _ranges.RemoveAt(i + 1);
+            this._ranges.RemoveAt(i + 1);
             i--;
         }
     }
 
     /// <inheritdoc />
-    public void Add(BitRange item)
-    {
-        (var result, int index) = FindFirstOverlappingRange(item);
+    public void Add(BitRange item) {
+        (SearchResult result, int index) = this.FindFirstOverlappingRange(item);
 
-        switch (result)
-        {
-            case SearchResult.PresentBeforeIndex:
-                _ranges.Insert(index + 1, item);
-                break;
+        switch (result) {
+            case SearchResult.PresentBeforeIndex: this._ranges.Insert(index + 1, item); break;
 
             case SearchResult.PresentAfterIndex:
             case SearchResult.NotPresentAtIndex:
-                _ranges.Insert(index, item);
+                this._ranges.Insert(index, item);
                 break;
 
-            default:
-                throw new ArgumentOutOfRangeException();
+            default: throw new ArgumentOutOfRangeException();
         }
 
-        MergeRanges(index);
+        this.MergeRanges(index);
     }
 
     /// <inheritdoc />
-    public void Clear() => _ranges.Clear();
+    public void Clear() => this._ranges.Clear();
 
     /// <inheritdoc />
-    public bool Contains(BitRange item) => _ranges.Contains(item);
+    public bool Contains(BitRange item) => this._ranges.Contains(item);
 
     /// <inheritdoc />
-    public bool Contains(BitLocation location) => IsSuperSetOf(new BitRange(location, location.NextOrMax()));
+    public bool Contains(BitLocation location) => this.IsSuperSetOf(new BitRange(location, location.NextOrMax()));
 
     /// <inheritdoc />
-    public bool IsSuperSetOf(BitRange range)
-    {
-        (var result, int index) = FindFirstOverlappingRange(range);
+    public bool IsSuperSetOf(BitRange range) {
+        (SearchResult result, int index) = this.FindFirstOverlappingRange(range);
         if (result == SearchResult.NotPresentAtIndex)
             return false;
 
-        return _ranges[index].Contains(range);
+        return this._ranges[index].Contains(range);
     }
 
     /// <inheritdoc />
-    public bool IntersectsWith(BitRange range)
-    {
-        (var result, int index) = FindFirstOverlappingRange(range);
+    public bool IntersectsWith(BitRange range) {
+        (SearchResult result, int index) = this.FindFirstOverlappingRange(range);
         if (result == SearchResult.NotPresentAtIndex)
             return false;
 
-        return _ranges[index].OverlapsWith(range);
+        return this._ranges[index].OverlapsWith(range);
     }
 
     /// <inheritdoc />
-    public int GetOverlappingRanges(BitRange range, Span<BitRange> output)
-    {
-        (var result, int index) = FindFirstOverlappingRange(range);
+    public int GetOverlappingRanges(BitRange range, Span<BitRange> output) {
+        (SearchResult result, int index) = this.FindFirstOverlappingRange(range);
         if (result == SearchResult.NotPresentAtIndex)
             return 0;
 
         int count = 0;
-        for (int i = index; i < _ranges.Count && count < output.Length; i++)
-        {
-            var current = _ranges[i];
+        for (int i = index; i < this._ranges.Count && count < output.Length; i++) {
+            BitRange current = this._ranges[i];
             if (current.Start >= range.End)
                 break;
 
@@ -161,14 +141,12 @@ public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange>
     }
 
     /// <inheritdoc />
-    public int GetIntersectingRanges(BitRange range, Span<BitRange> output)
-    {
+    public int GetIntersectingRanges(BitRange range, Span<BitRange> output) {
         // Get overlapping ranges.
-        int count = GetOverlappingRanges(range, output);
+        int count = this.GetOverlappingRanges(range, output);
 
         // Cut off first and last ranges.
-        if (count > 0)
-        {
+        if (count > 0) {
             output[0] = output[0].Clamp(range);
             if (count > 1)
                 output[count - 1] = output[count - 1].Clamp(range);
@@ -178,52 +156,46 @@ public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange>
     }
 
     /// <inheritdoc />
-    public void CopyTo(BitRange[] array, int arrayIndex) => _ranges.CopyTo(array, arrayIndex);
+    public void CopyTo(BitRange[] array, int arrayIndex) => this._ranges.CopyTo(array, arrayIndex);
 
     /// <inheritdoc />
-    public bool Remove(BitRange item)
-    {
-        (var result, int index) = FindFirstOverlappingRange(item);
+    public bool Remove(BitRange item) {
+        (SearchResult result, int index) = this.FindFirstOverlappingRange(item);
 
         if (result == SearchResult.NotPresentAtIndex)
             return false;
 
-        for (int i = index; i < _ranges.Count; i++)
-        {
+        for (int i = index; i < this._ranges.Count; i++) {
             // Is this an overlapping range?
-            if (!_ranges[i].OverlapsWith(item))
+            if (!this._ranges[i].OverlapsWith(item))
                 break;
 
-            if (_ranges[i].Contains(new BitRange(item.Start, item.End.NextOrMax())))
-            {
+            if (this._ranges[i].Contains(new BitRange(item.Start, item.End.NextOrMax()))) {
                 // The range contains the entire range-to-remove, split up the range.
-                var (a, rest) = _ranges[i].Split(item.Start);
-                var (b, c) = rest.Split(item.End);
+                (BitRange a, BitRange rest) = this._ranges[i].Split(item.Start);
+                (BitRange b, BitRange c) = rest.Split(item.End);
 
                 if (a.IsEmpty)
-                    _ranges.RemoveAt(i--);
+                    this._ranges.RemoveAt(i--);
                 else
-                    _ranges[i] = a;
+                    this._ranges[i] = a;
 
                 if (!c.IsEmpty)
-                    _ranges.Insert(i + 1, c);
+                    this._ranges.Insert(i + 1, c);
                 break;
             }
 
-            if (item.Contains(_ranges[i]))
-            {
+            if (item.Contains(this._ranges[i])) {
                 // The range-to-remove contains the entire current range.
-                _ranges.RemoveAt(i--);
+                this._ranges.RemoveAt(i--);
             }
-            else if (item.Start < _ranges[i].Start)
-            {
+            else if (item.Start < this._ranges[i].Start) {
                 // We are truncating the current range from the left.
-                _ranges[i] = _ranges[i].Clamp(new BitRange(item.End, BitLocation.Maximum));
+                this._ranges[i] = this._ranges[i].Clamp(new BitRange(item.End, BitLocation.Maximum));
             }
-            else if (item.End >= _ranges[i].End)
-            {
+            else if (item.End >= this._ranges[i].End) {
                 // We are truncating the current range from the right.
-                _ranges[i] = _ranges[i].Clamp(new BitRange(BitLocation.Minimum, item.Start));
+                this._ranges[i] = this._ranges[i].Clamp(new BitRange(BitLocation.Minimum, item.Start));
             }
         }
 
@@ -233,9 +205,9 @@ public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange>
     /// <inheritdoc />
     public Enumerator GetEnumerator() => new(this);
 
-    IEnumerator<BitRange> IEnumerable<BitRange>.GetEnumerator() => GetEnumerator();
+    IEnumerator<BitRange> IEnumerable<BitRange>.GetEnumerator() => this.GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
     /// <summary>
     /// Wraps the union into a <see cref="ReadOnlyBitRangeUnion"/>.
@@ -243,8 +215,7 @@ public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange>
     /// <returns>The resulting read-only union.</returns>
     public ReadOnlyBitRangeUnion AsReadOnly() => new(this);
 
-    private enum SearchResult
-    {
+    private enum SearchResult {
         PresentBeforeIndex,
         PresentAfterIndex,
         NotPresentAtIndex,
@@ -253,8 +224,16 @@ public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange>
     /// <summary>
     /// An implementation of an enumerator that enumerates all disjoint ranges within a bit range union.
     /// </summary>
-    public struct Enumerator : IEnumerator<BitRange>
-    {
+    public struct Enumerator : IEnumerator<BitRange> {
+        /// <inheritdoc />
+        public BitRange Current =>
+            this._index < this._union._ranges.Count
+                ? this._union._ranges[this._index]
+                : default;
+
+        /// <inheritdoc />
+        object IEnumerator.Current => this.Current;
+
         private readonly BitRangeUnion _union;
         private int _index;
 
@@ -262,35 +241,23 @@ public class BitRangeUnion : IReadOnlyBitRangeUnion, ICollection<BitRange>
         /// Creates a new disjoint bit range union enumerator.
         /// </summary>
         /// <param name="union">The disjoint union to enumerate.</param>
-        public Enumerator(BitRangeUnion union) : this()
-        {
-            _union = union;
-            _index = -1;
+        public Enumerator(BitRangeUnion union) : this() {
+            this._union = union;
+            this._index = -1;
         }
 
         /// <inheritdoc />
-        public BitRange Current => _index < _union._ranges.Count
-            ? _union._ranges[_index]
-            : default;
-
-        /// <inheritdoc />
-        object IEnumerator.Current => Current;
-
-        /// <inheritdoc />
-        public bool MoveNext()
-        {
-            _index++;
-            return _index < _union._ranges.Count;
+        public bool MoveNext() {
+            this._index++;
+            return this._index < this._union._ranges.Count;
         }
 
         /// <inheritdoc />
-        void IEnumerator.Reset()
-        {
+        void IEnumerator.Reset() {
         }
 
         /// <inheritdoc />
-        public void Dispose()
-        {
+        public void Dispose() {
         }
     }
 }

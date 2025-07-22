@@ -9,17 +9,7 @@ namespace AvaloniaHex.Rendering;
 /// Represents a single visual line in a hex view.
 /// </summary>
 [DebuggerDisplay("{Range}")]
-public sealed class VisualBytesLine
-{
-    internal VisualBytesLine(HexView hexView)
-    {
-        HexView = hexView;
-
-        Data = new byte[hexView.ActualBytesPerLine];
-        ColumnTextLines = new TextLine?[hexView.Columns.Count];
-        Segments = new List<VisualBytesLineSegment>();
-    }
-
+public sealed class VisualBytesLine {
     /// <summary>
     /// Gets the parent ehx view the line is visible in.
     /// </summary>
@@ -61,14 +51,21 @@ public sealed class VisualBytesLine
     /// </summary>
     public bool IsValid { get; private set; }
 
+    internal VisualBytesLine(HexView hexView) {
+        this.HexView = hexView;
+
+        this.Data = new byte[hexView.ActualBytesPerLine];
+        this.ColumnTextLines = new TextLine?[hexView.Columns.Count];
+        this.Segments = new List<VisualBytesLineSegment>();
+    }
+
     /// <summary>
     /// Gets the byte in the visual line at the provided absolute byte offset.
     /// </summary>
     /// <param name="byteIndex">The byte offset.</param>
     /// <returns>The byte.</returns>
-    public byte GetByteAtAbsolute(ulong byteIndex)
-    {
-        return Data[byteIndex - Range.Start.ByteIndex];
+    public byte GetByteAtAbsolute(ulong byteIndex) {
+        return this.Data[byteIndex - this.Range.Start.ByteIndex];
     }
 
     /// <summary>
@@ -76,14 +73,13 @@ public sealed class VisualBytesLine
     /// </summary>
     /// <param name="range">The range.</param>
     /// <returns>The span.</returns>
-    public Span<byte> AsAbsoluteSpan(BitRange range)
-    {
-        if (!Range.Contains(range))
+    public Span<byte> AsAbsoluteSpan(BitRange range) {
+        if (!this.Range.Contains(range))
             throw new ArgumentException("Provided range is not within the current line");
 
-        return Data.AsSpan(
-            (int)(range.Start.ByteIndex - Range.Start.ByteIndex),
-            (int)range.ByteLength
+        return this.Data.AsSpan(
+            (int) (range.Start.ByteIndex - this.Range.Start.ByteIndex),
+            (int) range.ByteLength
         );
     }
 
@@ -92,10 +88,8 @@ public sealed class VisualBytesLine
     /// </summary>
     /// <param name="location">The location.</param>
     /// <returns>The segment, or <c>null</c> if no segment contains the provided location.</returns>
-    public VisualBytesLineSegment? FindSegmentContaining(BitLocation location)
-    {
-        foreach (var segment in Segments)
-        {
+    public VisualBytesLineSegment? FindSegmentContaining(BitLocation location) {
+        foreach (var segment in this.Segments) {
             if (segment.Range.Contains(location))
                 return segment;
         }
@@ -103,23 +97,20 @@ public sealed class VisualBytesLine
         return null;
     }
 
-    internal bool SetRange(BitRange virtualRange)
-    {
+    internal bool SetRange(BitRange virtualRange) {
         bool hasChanged = false;
 
-        if (VirtualRange != virtualRange)
-        {
-            VirtualRange = virtualRange;
+        if (this.VirtualRange != virtualRange) {
+            this.VirtualRange = virtualRange;
             hasChanged = true;
         }
 
-        var range = HexView.Document is { ValidRanges.EnclosingRange: var enclosingRange }
+        var range = this.HexView.Document is { ValidRanges.EnclosingRange: var enclosingRange }
             ? virtualRange.Clamp(enclosingRange)
             : BitRange.Empty;
 
-        if (Range != range)
-        {
-            Range = range;
+        if (this.Range != range) {
+            this.Range = range;
             hasChanged = true;
         }
 
@@ -129,76 +120,67 @@ public sealed class VisualBytesLine
     /// <summary>
     /// Ensures the visual line is populated with the latest binary data and line segments.
     /// </summary>
-    public void EnsureIsValid()
-    {
-        if (!IsValid)
-            Refresh();
+    public void EnsureIsValid() {
+        if (!this.IsValid)
+            this.Refresh();
     }
 
     /// <summary>
     /// Marks the visual line, its binary data and line segments as out of date.
     /// </summary>
-    public void Invalidate() => IsValid = false;
+    public void Invalidate() => this.IsValid = false;
 
     /// <summary>
     /// Updates the visual line with the latest data of the document and reconstructs all line segments.
     /// </summary>
-    public void Refresh()
-    {
-        if (HexView.Document is null)
+    public void Refresh() {
+        if (this.HexView.Document is null)
             return;
 
-        ReadData();
-        CreateLineSegments();
-        CreateColumnTextLines();
+        this.ReadData();
+        this.CreateLineSegments();
+        this.CreateColumnTextLines();
 
-        IsValid = true;
+        this.IsValid = true;
     }
 
-    private void ReadData()
-    {
-        var document = HexView.Document!;
-        var dataSpan = Data.AsSpan(0, (int) Range.ByteLength);
+    private void ReadData() {
+        var document = this.HexView.Document!;
+        var dataSpan = this.Data.AsSpan(0, (int) this.Range.ByteLength);
 
         // Fast path, just read entire range if possible.
-        if (!document.ValidRanges.IsFragmented)
-        {
-            document.ReadBytes(Range.Start.ByteIndex, dataSpan);
+        if (!document.ValidRanges.IsFragmented) {
+            document.ReadBytes(this.Range.Start.ByteIndex, dataSpan);
             return;
         }
 
         // Only read valid segments in the line.
         Span<BitRange> ranges = stackalloc BitRange[dataSpan.Length];
-        int count = document.ValidRanges.GetIntersectingRanges(Range, ranges);
-        for (int i = 0; i < count; i++)
-        {
+        int count = document.ValidRanges.GetIntersectingRanges(this.Range, ranges);
+        for (int i = 0; i < count; i++) {
             var range = ranges[i];
-            int relativeOffset = (int) (range.Start.ByteIndex - Range.Start.ByteIndex);
+            int relativeOffset = (int) (range.Start.ByteIndex - this.Range.Start.ByteIndex);
 
             var chunk = dataSpan[relativeOffset..(relativeOffset + (int) range.ByteLength)];
             document.ReadBytes(range.Start.ByteIndex, chunk);
         }
     }
 
-    private void CreateLineSegments()
-    {
-        Segments.Clear();
-        Segments.Add(new VisualBytesLineSegment(Range));
+    private void CreateLineSegments() {
+        this.Segments.Clear();
+        this.Segments.Add(new VisualBytesLineSegment(this.Range));
 
-        var transformers = HexView.LineTransformers;
+        var transformers = this.HexView.LineTransformers;
         for (int i = 0; i < transformers.Count; i++)
-            transformers[i].Transform(HexView, this);
+            transformers[i].Transform(this.HexView, this);
     }
 
-    private void CreateColumnTextLines()
-    {
-        for (int i = 0; i < HexView.Columns.Count; i++)
-        {
-            var column = HexView.Columns[i];
-            if (column.IsVisible)
-            {
-                ColumnTextLines[i]?.Dispose();
-                ColumnTextLines[i] = column.CreateTextLine(this);
+    private void CreateColumnTextLines() {
+        for (int i = 0; i < this.HexView.Columns.Count; i++) {
+            var column = this.HexView.Columns[i];
+            if (column.IsVisible) {
+                this.ColumnTextLines[i]?.Dispose();
+                this.ColumnTextLines[i] = column.CreateTextLine(this);
             }
         }
     }
@@ -207,10 +189,9 @@ public sealed class VisualBytesLine
     /// Computes the required height required to the visual line occupies.
     /// </summary>
     /// <returns>The height.</returns>
-    public double GetRequiredHeight()
-    {
+    public double GetRequiredHeight() {
         double height = 0;
-        foreach (var columns in ColumnTextLines)
+        foreach (var columns in this.ColumnTextLines)
             height = Math.Max(height, columns?.Height ?? 0);
         return height;
     }

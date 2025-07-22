@@ -5,8 +5,7 @@ namespace AvaloniaHex.Base.Document;
 /// <summary>
 /// Provides read-only access to a disjoint union of binary ranges in a document.
 /// </summary>
-public interface IReadOnlyBitRangeUnion : IReadOnlyCollection<BitRange>, INotifyCollectionChanged
-{
+public interface IReadOnlyBitRangeUnion : IReadOnlyCollection<BitRange>, INotifyCollectionChanged {
     /// <summary>
     /// Gets the minimum range that encloses all sub ranges included in the union.
     /// </summary>

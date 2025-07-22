@@ -7,8 +7,7 @@ namespace AvaloniaHex.Rendering;
 /// <summary>
 /// Represents a single layer in the hex view rendering.
 /// </summary>
-public abstract class Layer : Control
-{
+public abstract class Layer : Control {
     /// <summary>
     /// Gets a value indicating when the layer should be rendered.
     /// </summary>
@@ -17,15 +16,10 @@ public abstract class Layer : Control
     /// <summary>
     /// Gets the parent hex view the layer is added to.
     /// </summary>
-    public HexView? HexView
-    {
-        get;
-        internal set;
-    }
+    public HexView? HexView { get; internal set; }
 
     /// <inheritdoc />
-    public override void Render(DrawingContext context)
-    {
+    public override void Render(DrawingContext context) {
         base.Render(context);
     }
 }

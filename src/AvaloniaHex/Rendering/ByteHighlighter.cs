@@ -6,8 +6,7 @@ namespace AvaloniaHex.Rendering;
 /// <summary>
 /// Provides a base for a byte-level highlighter in a hex view.
 /// </summary>
-public abstract class ByteHighlighter : ILineTransformer
-{
+public abstract class ByteHighlighter : ILineTransformer {
     /// <summary>
     /// Gets or sets the brush used for rendering the foreground of the highlighted bytes.
     /// </summary>
@@ -28,24 +27,21 @@ public abstract class ByteHighlighter : ILineTransformer
     protected abstract bool IsHighlighted(HexView hexView, VisualBytesLine line, BitLocation location);
 
     /// <inheritdoc />
-    public void Transform(HexView hexView, VisualBytesLine line)
-    {
+    public void Transform(HexView hexView, VisualBytesLine line) {
         for (int i = 0; i < line.Segments.Count; i++)
-            ColorizeSegment(hexView, line, ref i);
+            this.ColorizeSegment(hexView, line, ref i);
     }
 
-    private void ColorizeSegment(HexView hexView, VisualBytesLine line, ref int index)
-    {
+    private void ColorizeSegment(HexView hexView, VisualBytesLine line, ref int index) {
         var originalSegment = line.Segments[index];
 
         var currentSegment = originalSegment;
 
         bool isInModifiedRange = false;
-        for (ulong j = 0; j < originalSegment.Range.ByteLength; j++)
-        {
+        for (ulong j = 0; j < originalSegment.Range.ByteLength; j++) {
             var currentLocation = new BitLocation(originalSegment.Range.Start.ByteIndex + j);
 
-            bool shouldSplit = IsHighlighted(hexView, line, currentLocation) ? !isInModifiedRange : isInModifiedRange;
+            bool shouldSplit = this.IsHighlighted(hexView, line, currentLocation) ? !isInModifiedRange : isInModifiedRange;
             if (!shouldSplit)
                 continue;
 
@@ -54,27 +50,23 @@ public abstract class ByteHighlighter : ILineTransformer
             // Split the segment.
             var (left, right) = currentSegment.Split(currentLocation);
 
-            if (isInModifiedRange)
-            {
+            if (isInModifiedRange) {
                 // We entered a highlighted segment.
-                right.ForegroundBrush = Foreground;
-                right.BackgroundBrush = Background;
+                right.ForegroundBrush = this.Foreground;
+                right.BackgroundBrush = this.Background;
             }
-            else
-            {
+            else {
                 // We left a highlighted segment.
                 right.ForegroundBrush = originalSegment.ForegroundBrush;
                 right.BackgroundBrush = originalSegment.BackgroundBrush;
             }
 
             // Insert the ranges.
-            if (left.Range.IsEmpty)
-            {
+            if (left.Range.IsEmpty) {
                 // Optimization. Just replace the left segment if it is empty.
                 line.Segments[index] = right;
             }
-            else
-            {
+            else {
                 line.Segments[index] = left;
                 line.Segments.Insert(index + 1, right);
                 index++;

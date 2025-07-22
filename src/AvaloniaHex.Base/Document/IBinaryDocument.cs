@@ -3,13 +3,7 @@ namespace AvaloniaHex.Base.Document;
 /// <summary>
 /// Represents a binary document that can be displayed in a hex editor.
 /// </summary>
-public interface IBinaryDocument : IDisposable
-{
-    /// <summary>
-    /// Fires when the contents of the document has changed.
-    /// </summary>
-    event EventHandler<BinaryDocumentChange> Changed;
-
+public interface IBinaryDocument : IDisposable {
     /// <summary>
     /// Gets the total length of the document.
     /// </summary>
@@ -34,6 +28,11 @@ public interface IBinaryDocument : IDisposable
     /// Gets a collection of binary ranges in the document that are accessible/valid.
     /// </summary>
     IReadOnlyBitRangeUnion ValidRanges { get; }
+
+    /// <summary>
+    /// Fires when the contents of the document has changed.
+    /// </summary>
+    event EventHandler<BinaryDocumentChange> Changed;
 
     /// <summary>
     /// Reads bytes from the document at the provided offset.

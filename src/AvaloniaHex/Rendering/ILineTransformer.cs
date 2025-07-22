@@ -3,8 +3,7 @@
 /// <summary>
 /// Provides members for transforming a visual line.
 /// </summary>
-public interface ILineTransformer
-{
+public interface ILineTransformer {
     /// <summary>
     /// Transforms a visual line.
     /// </summary>

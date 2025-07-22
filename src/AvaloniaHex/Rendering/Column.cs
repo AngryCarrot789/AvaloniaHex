@@ -8,40 +8,8 @@ namespace AvaloniaHex.Rendering;
 /// <summary>
 /// Represents a single column in a hex view.
 /// </summary>
-public abstract class Column : Visual
-{
+public abstract class Column : Visual {
     internal static readonly Cursor IBeamCursor = new(StandardCursorType.Ibeam);
-
-    private GenericTextRunProperties? _headerRunProperties;
-    private GenericTextRunProperties? _textRunProperties;
-
-    static Column()
-    {
-        ForegroundProperty.Changed.AddClassHandler<Column>(OnVisualPropertyChanged);
-        BackgroundProperty.Changed.AddClassHandler<Column>(OnVisualPropertyChanged);
-        BorderProperty.Changed.AddClassHandler<Column>(OnVisualPropertyChanged);
-        IsVisibleProperty.Changed.AddClassHandler<Column>(OnVisibleChanged);
-        IsHeaderVisibleProperty.Changed.AddClassHandler<Column>(OnHeaderChanged);
-    }
-
-    /// <summary>
-    /// Gets the parent hex view the column was added to.
-    /// </summary>
-    public HexView? HexView
-    {
-        get;
-        internal set;
-    }
-
-    /// <summary>
-    /// Gets the index of the column in the hex view.
-    /// </summary>
-    public int Index => HexView?.Columns.IndexOf(this) ?? -1;
-
-    /// <summary>
-    /// Gets the minimum size of the column.
-    /// </summary>
-    public abstract Size MinimumSize { get; }
 
     /// <summary>
     /// Dependency property for <see cref="Border"/>
@@ -50,28 +18,10 @@ public abstract class Column : Visual
         AvaloniaProperty.Register<Column, IPen?>(nameof(Border));
 
     /// <summary>
-    /// Gets or sets the pen to draw border of the column with, or <c>null</c> if no border should be drawn.
-    /// </summary>
-    public IPen? Border
-    {
-        get => GetValue(BorderProperty);
-        set => SetValue(BorderProperty, value);
-    }
-
-    /// <summary>
     /// Dependency property for <see cref="Background"/>
     /// </summary>
     public static readonly StyledProperty<IBrush?> BackgroundProperty =
         AvaloniaProperty.Register<Column, IBrush?>(nameof(Background));
-
-    /// <summary>
-    /// Gets or sets the base background brush of the column, or <c>null</c> if no background should be drawn.
-    /// </summary>
-    public IBrush? Background
-    {
-        get => GetValue(BackgroundProperty);
-        set => SetValue(BackgroundProperty, value);
-    }
 
     /// <summary>
     /// Dependency property for <see cref="Foreground"/>
@@ -80,34 +30,10 @@ public abstract class Column : Visual
         AvaloniaProperty.Register<Column, IBrush?>(nameof(Foreground));
 
     /// <summary>
-    /// Gets or sets the base foreground brush of the column, or <c>null</c> if the default foreground brush of the
-    /// parent hex view should be used.
-    /// </summary>
-    public IBrush? Foreground
-    {
-        get => GetValue(ForegroundProperty);
-        set => SetValue(ForegroundProperty, value);
-    }
-
-    /// <summary>
     /// Dependency property for <see cref="Cursor"/>
     /// </summary>
     public static readonly StyledProperty<Cursor?> CursorProperty =
         AvaloniaProperty.Register<Column, Cursor?>(nameof(Cursor));
-
-    /// <summary>
-    /// Gets or sets the cursor to use in the column.
-    /// </summary>
-    public Cursor? Cursor
-    {
-        get => GetValue(CursorProperty);
-        set => SetValue(CursorProperty, value);
-    }
-
-    /// <summary>
-    /// Gets the column width.
-    /// </summary>
-    public virtual double Width => MinimumSize.Width;
 
     /// <summary>
     /// Dependency property for <see cref="IsHeaderVisible"/>
@@ -116,28 +42,10 @@ public abstract class Column : Visual
         AvaloniaProperty.Register<Column, bool>(nameof(IsHeaderVisible), defaultValue: true);
 
     /// <summary>
-    /// Gets or sets a value indicating whether the header of this column is visible.
-    /// </summary>
-    public bool IsHeaderVisible
-    {
-        get => GetValue(IsHeaderVisibleProperty);
-        set => SetValue(IsHeaderVisibleProperty, value);
-    }
-
-    /// <summary>
     /// Dependency property for <see cref="Header"/>/
     /// </summary>
     public static readonly StyledProperty<string?> HeaderProperty =
         AvaloniaProperty.Register<Column, string?>(nameof(Header));
-
-    /// <summary>
-    /// Gets or sets the header text of this column.
-    /// </summary>
-    public string? Header
-    {
-        get => GetValue(HeaderProperty);
-        set => SetValue(HeaderProperty, value);
-    }
 
     /// <summary>
     /// Dependency property for <see cref="HeaderBackground"/>
@@ -146,30 +54,10 @@ public abstract class Column : Visual
         AvaloniaProperty.Register<Column, IBrush?>(nameof(HeaderBackground));
 
     /// <summary>
-    /// Gets or sets the base background brush of the header of the column, or <c>null</c> if no background should be
-    /// drawn.
-    /// </summary>
-    public IBrush? HeaderBackground
-    {
-        get => GetValue(HeaderBackgroundProperty);
-        set => SetValue(HeaderBackgroundProperty, value);
-    }
-
-    /// <summary>
     /// Dependency property for <see cref="HeaderForeground"/>
     /// </summary>
     public static readonly StyledProperty<IBrush?> HeaderForegroundProperty =
         AvaloniaProperty.Register<Column, IBrush?>(nameof(HeaderForeground));
-
-    /// <summary>
-    /// Gets or sets the base foreground brush of the header of the column, or <c>null</c> if the default foreground
-    /// brush of the parent hex view should be used.
-    /// </summary>
-    public IBrush? HeaderForeground
-    {
-        get => GetValue(HeaderForegroundProperty);
-        set => SetValue(HeaderForegroundProperty, value);
-    }
 
     /// <summary>
     /// Dependency property for <see cref="HeaderBorder"/>
@@ -178,30 +66,126 @@ public abstract class Column : Visual
         AvaloniaProperty.Register<HeaderLayer, IPen?>(nameof(HeaderBorder));
 
     /// <summary>
+    /// Gets the parent hex view the column was added to.
+    /// </summary>
+    public HexView? HexView { get; internal set; }
+
+    /// <summary>
+    /// Gets the index of the column in the hex view.
+    /// </summary>
+    public int Index => this.HexView?.Columns.IndexOf(this) ?? -1;
+
+    /// <summary>
+    /// Gets the minimum size of the column.
+    /// </summary>
+    public abstract Size MinimumSize { get; }
+
+    /// <summary>
+    /// Gets or sets the pen to draw border of the column with, or <c>null</c> if no border should be drawn.
+    /// </summary>
+    public IPen? Border {
+        get => this.GetValue(BorderProperty);
+        set => this.SetValue(BorderProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the base background brush of the column, or <c>null</c> if no background should be drawn.
+    /// </summary>
+    public IBrush? Background {
+        get => this.GetValue(BackgroundProperty);
+        set => this.SetValue(BackgroundProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the base foreground brush of the column, or <c>null</c> if the default foreground brush of the
+    /// parent hex view should be used.
+    /// </summary>
+    public IBrush? Foreground {
+        get => this.GetValue(ForegroundProperty);
+        set => this.SetValue(ForegroundProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the cursor to use in the column.
+    /// </summary>
+    public Cursor? Cursor {
+        get => this.GetValue(CursorProperty);
+        set => this.SetValue(CursorProperty, value);
+    }
+
+    /// <summary>
+    /// Gets the column width.
+    /// </summary>
+    public virtual double Width => this.MinimumSize.Width;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the header of this column is visible.
+    /// </summary>
+    public bool IsHeaderVisible {
+        get => this.GetValue(IsHeaderVisibleProperty);
+        set => this.SetValue(IsHeaderVisibleProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the header text of this column.
+    /// </summary>
+    public string? Header {
+        get => this.GetValue(HeaderProperty);
+        set => this.SetValue(HeaderProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the base background brush of the header of the column, or <c>null</c> if no background should be
+    /// drawn.
+    /// </summary>
+    public IBrush? HeaderBackground {
+        get => this.GetValue(HeaderBackgroundProperty);
+        set => this.SetValue(HeaderBackgroundProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the base foreground brush of the header of the column, or <c>null</c> if the default foreground
+    /// brush of the parent hex view should be used.
+    /// </summary>
+    public IBrush? HeaderForeground {
+        get => this.GetValue(HeaderForegroundProperty);
+        set => this.SetValue(HeaderForegroundProperty, value);
+    }
+
+    /// <summary>
     /// Gets or sets the pen to use for drawing the border around the header of the column.
     /// </summary>
-    public IPen? HeaderBorder
-    {
-        get => GetValue(HeaderBorderProperty);
-        set => SetValue(HeaderBorderProperty, value);
+    public IPen? HeaderBorder {
+        get => this.GetValue(HeaderBorderProperty);
+        set => this.SetValue(HeaderBorderProperty, value);
     }
 
-    internal void SetBounds(Rect bounds) => Bounds = bounds;
+    private GenericTextRunProperties? _headerRunProperties;
+    private GenericTextRunProperties? _textRunProperties;
+
+    static Column() {
+        ForegroundProperty.Changed.AddClassHandler<Column>(OnVisualPropertyChanged);
+        BackgroundProperty.Changed.AddClassHandler<Column>(OnVisualPropertyChanged);
+        BorderProperty.Changed.AddClassHandler<Column>(OnVisualPropertyChanged);
+        IsVisibleProperty.Changed.AddClassHandler<Column>(OnVisibleChanged);
+        IsHeaderVisibleProperty.Changed.AddClassHandler<Column>(OnHeaderChanged);
+    }
+
+    internal void SetBounds(Rect bounds) => this.Bounds = bounds;
 
     /// <summary>
     /// Gets the text run properties to use for rendering text in this column.
     /// </summary>
     /// <returns>The properties.</returns>
     /// <exception cref="InvalidOperationException">Occurs when the column is not added to a hex view.</exception>
-    protected GenericTextRunProperties GetTextRunProperties()
-    {
-        if (HexView is null)
+    protected GenericTextRunProperties GetTextRunProperties() {
+        if (this.HexView is null)
             throw new InvalidOperationException("Cannot query text run properties on a column that is not attached to a hex view.");
 
-        if (!HexView.TextRunProperties.Equals(_textRunProperties))
-            _textRunProperties = HexView.TextRunProperties.WithBrushes(Foreground ?? HexView.Foreground, Background);
+        if (!this.HexView.TextRunProperties.Equals(this._textRunProperties))
+            this._textRunProperties = this.HexView.TextRunProperties.WithBrushes(this.Foreground ?? this.HexView.Foreground, this.Background);
 
-        return _textRunProperties;
+        return this._textRunProperties;
     }
 
     /// <summary>
@@ -209,15 +193,14 @@ public abstract class Column : Visual
     /// </summary>
     /// <returns>The properties.</returns>
     /// <exception cref="InvalidOperationException">Occurs when the column is not added to a hex view.</exception>
-    protected GenericTextRunProperties GetHeaderTextRunProperties()
-    {
-        if (HexView is null)
+    protected GenericTextRunProperties GetHeaderTextRunProperties() {
+        if (this.HexView is null)
             throw new InvalidOperationException("Cannot query text run properties on a column that is not attached to a hex view.");
 
-        if (!HexView.TextRunProperties.Equals(_headerRunProperties))
-            _headerRunProperties = HexView.TextRunProperties.WithForeground(HeaderForeground ?? HexView.Foreground);
+        if (!this.HexView.TextRunProperties.Equals(this._headerRunProperties))
+            this._headerRunProperties = this.HexView.TextRunProperties.WithForeground(this.HeaderForeground ?? this.HexView.Foreground);
 
-        return _headerRunProperties;
+        return this._headerRunProperties;
     }
 
     /// <summary>
@@ -229,12 +212,11 @@ public abstract class Column : Visual
     /// Constructs the text line of the header of the column.
     /// </summary>
     /// <returns></returns>
-    public virtual TextLine? CreateHeaderLine()
-    {
-        if (HexView is null || Header is not { } header)
+    public virtual TextLine? CreateHeaderLine() {
+        if (this.HexView is null || this.Header is not { } header)
             return null;
 
-        var properties = GetHeaderTextRunProperties();
+        var properties = this.GetHeaderTextRunProperties();
         return TextFormatter.Current.FormatLine(
             new SimpleTextSource(header, properties),
             0,
@@ -250,13 +232,11 @@ public abstract class Column : Visual
     /// <returns>The rendered text.</returns>
     public abstract TextLine? CreateTextLine(VisualBytesLine line);
 
-    private static void OnVisualPropertyChanged(Column arg1, AvaloniaPropertyChangedEventArgs arg2)
-    {
+    private static void OnVisualPropertyChanged(Column arg1, AvaloniaPropertyChangedEventArgs arg2) {
         arg1.HexView?.InvalidateVisualLines();
     }
 
-    private static void OnVisibleChanged(Column arg1, AvaloniaPropertyChangedEventArgs arg2)
-    {
+    private static void OnVisibleChanged(Column arg1, AvaloniaPropertyChangedEventArgs arg2) {
         if (arg1.HexView is null)
             return;
 
@@ -265,8 +245,7 @@ public abstract class Column : Visual
             layer.InvalidateVisual();
     }
 
-    private static void OnHeaderChanged(Column arg1, AvaloniaPropertyChangedEventArgs arg2)
-    {
+    private static void OnHeaderChanged(Column arg1, AvaloniaPropertyChangedEventArgs arg2) {
         if (arg1.HexView is null)
             return;
 
