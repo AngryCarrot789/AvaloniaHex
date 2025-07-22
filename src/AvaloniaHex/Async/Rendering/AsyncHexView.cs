@@ -195,7 +195,8 @@ public class AsyncHexView : Control, ILogicalScrollable {
     /// Gets or sets the scroll size, in logical units
     /// </summary>
     public Size ScrollSize {
-        get => this.GetValue(ScrollSizeProperty);
+        get => new Size(0, 1);
+        // get => this.GetValue(ScrollSizeProperty);
         set => this.SetValue(ScrollSizeProperty, value);
     }
 
@@ -336,7 +337,7 @@ public class AsyncHexView : Control, ILogicalScrollable {
         this.UpdateVisualLines(finalSize);
 
         if (this.BinarySource is IBinarySource source) {
-            this.Extent = new Size(0, Math.Ceiling((double) source.ValidRanges.EnclosingRange.ByteLength / this.ActualBytesPerLine));
+            this.Extent = new Size(0, Math.Ceiling((double) source.ApplicableRange.ByteLength / this.ActualBytesPerLine));
         }
         else {
             this.Extent = default;
@@ -442,7 +443,7 @@ public class AsyncHexView : Control, ILogicalScrollable {
         }
 
         // Otherwise, ensure all visible lines are created.
-        BitRange enclosingRange = this.BinarySource.ValidRanges.EnclosingRange;
+        BitRange enclosingRange = this.BinarySource.ApplicableRange;
         BitLocation startLocation = new BitLocation(
             enclosingRange.Start.ByteIndex + (ulong) this.ScrollOffset.Y * (ulong) this.ActualBytesPerLine
         );
@@ -484,10 +485,16 @@ public class AsyncHexView : Control, ILogicalScrollable {
         }
 
         if (this.BinarySource is IBinarySource source) {
-            source.InvalidateCache(0, this.VisibleRange.Start.ByteIndex);
+            const long ExtraBuffer = 2048; // extra space before and after visible area that we don't invalidate
+            ulong visibleStart = this.VisibleRange.Start.ByteIndex;
+            ulong visibleEnd = this.VisibleRange.End.ByteIndex;
+            ulong invalid1End = ExtraBuffer > visibleStart ? 0 : (visibleStart - ExtraBuffer);
+            ulong invalid2Start = ExtraBuffer > (ulong.MaxValue - visibleEnd) ? ulong.MaxValue : (visibleEnd + ExtraBuffer);
 
-            ulong end = this.VisibleRange.End.ByteIndex;
-            source.InvalidateCache(end, ulong.MaxValue - end);
+            if (invalid1End > 0)
+                source.InvalidateCache(0, invalid1End);
+            if (invalid2Start != ulong.MaxValue)
+                source.InvalidateCache(invalid2Start, ulong.MaxValue - invalid2Start);
         }
     }
 
@@ -575,34 +582,36 @@ public class AsyncHexView : Control, ILogicalScrollable {
     /// <param name="location">The location to scroll to.</param>
     /// <returns><c>true</c> if the scroll offset has changed, <c>false</c> otherwise.</returns>
     public bool BringIntoView(BitLocation location) {
-        if (this.BinarySource is not { ValidRanges.EnclosingRange: var enclosingRange }
-            || location.ByteIndex >= enclosingRange.End.ByteIndex + 1
-            || this.FullyVisibleRange.Contains(location)
-            || this.ActualBytesPerLine == 0) {
+        IBinarySource? source = this.BinarySource;
+        if (source == null) {
             return false;
         }
+        
+        BitRange enclosingRange = source.ApplicableRange;
+        if (location.ByteIndex < enclosingRange.End.ByteIndex + 1 && !this.FullyVisibleRange.Contains(location) && this.ActualBytesPerLine != 0) {
+            ulong firstLineIndex = this.FullyVisibleRange.Start.ByteIndex / (ulong) this.ActualBytesPerLine;
+            ulong lastLineIndex = (this.FullyVisibleRange.End.ByteIndex - 1) / (ulong) this.ActualBytesPerLine;
+            ulong targetLineIndex = (location.ByteIndex - enclosingRange.Start.ByteIndex) / (ulong) this.ActualBytesPerLine;
 
-        ulong firstLineIndex = this.FullyVisibleRange.Start.ByteIndex / (ulong) this.ActualBytesPerLine;
-        ulong lastLineIndex = (this.FullyVisibleRange.End.ByteIndex - 1) / (ulong) this.ActualBytesPerLine;
-        ulong targetLineIndex = (location.ByteIndex - enclosingRange.Start.ByteIndex) / (ulong) this.ActualBytesPerLine;
+            ulong newIndex;
 
-        ulong newIndex;
+            if (location > this.FullyVisibleRange.End) {
+                ulong difference = targetLineIndex - lastLineIndex;
+                newIndex = firstLineIndex + difference;
+            }
+            else if (location < this.FullyVisibleRange.Start) {
+                ulong difference = firstLineIndex - targetLineIndex;
+                newIndex = firstLineIndex - difference;
+            }
+            else {
+                return false;
+            }
 
-        if (location > this.FullyVisibleRange.End) {
-            ulong difference = targetLineIndex - lastLineIndex;
-            newIndex = firstLineIndex + difference;
+            this.ScrollOffset = new Vector(0, newIndex);
+            return true;
         }
-        else if (location < this.FullyVisibleRange.Start) {
-            ulong difference = firstLineIndex - targetLineIndex;
-            newIndex = firstLineIndex - difference;
-        }
-        else {
-            return false;
-        }
 
-        this.ScrollOffset = new Vector(0, newIndex);
-
-        return true;
+        return false;
     }
 
     bool ILogicalScrollable.BringIntoView(Control target, Rect targetRect) => false;

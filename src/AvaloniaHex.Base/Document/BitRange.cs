@@ -65,6 +65,8 @@ public readonly struct BitRange : IEquatable<BitRange> {
         this.Start = start;
         this.End = end;
     }
+    
+    public static BitRange FromLength(ulong start, ulong length) => new BitRange(start, checked(start + length));
 
     /// <summary>
     /// Determines whether the provided location is within the range.

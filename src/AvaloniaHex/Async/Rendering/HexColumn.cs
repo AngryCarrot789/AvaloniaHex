@@ -110,7 +110,7 @@ public class HexColumn : CellBasedColumn {
         }
 
         byte[] data = new byte[range.ByteLength];
-        this.HexView.BinarySource.ReadAvailableData(range.Start.ByteIndex, data);
+        this.HexView.BinarySource.ReadAvailableData(range.Start.ByteIndex, data, null);
 
         char[] output = new char[data.Length * 3 - 1];
         byte?[] nullableData = new byte?[data.Length];
@@ -171,7 +171,7 @@ public class HexColumn : CellBasedColumn {
         bool uppercase = this.IsUppercase;
         char invalidCellChar = this.InvalidCellChar;
 
-        if (this.HexView?.BinarySource?.ValidRanges is not { } valid) {
+        if (this.HexView?.BinarySource?.ApplicableRange is not { } valid) {
             buffer.Fill(invalidCellChar);
             return;
         }
@@ -188,11 +188,11 @@ public class HexColumn : CellBasedColumn {
 
             byte? value = data[i];
 
-            buffer[index] = value.HasValue && valid.IsSuperSetOf(new BitRange(location2, location3))
+            buffer[index] = value.HasValue && valid.Contains(new BitRange(location2, location3))
                 ? GetHexDigit((byte) ((value.Value >> 4) & 0xF), uppercase)
                 : invalidCellChar;
 
-            buffer[index + 1] = value.HasValue && valid.IsSuperSetOf(new BitRange(location1, location2))
+            buffer[index + 1] = value.HasValue && valid.Contains(new BitRange(location1, location2))
                 ? GetHexDigit((byte) (value.Value & 0xF), uppercase)
                 : invalidCellChar;
 

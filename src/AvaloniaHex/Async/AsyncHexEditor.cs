@@ -48,6 +48,9 @@ public class AsyncHexEditor : TemplatedControl {
             (editor, value) => editor.IsHeaderVisible = value
         );
 
+    public static readonly StyledProperty<bool> ScrollToCaretOnSizeChangedProperty =
+        AvaloniaProperty.Register<AsyncHexEditor, bool>(nameof(ScrollToCaretOnSizeChanged));
+
     /// <summary>
     /// Dependency property for <see cref="BinarySource"/>.
     /// </summary>
@@ -95,6 +98,11 @@ public class AsyncHexEditor : TemplatedControl {
     public bool IsHeaderVisible {
         get => this.HexView.IsHeaderVisible;
         set => this.HexView.IsHeaderVisible = value;
+    }
+
+    public bool ScrollToCaretOnSizeChanged {
+        get => this.GetValue(ScrollToCaretOnSizeChangedProperty);
+        set => this.SetValue(ScrollToCaretOnSizeChangedProperty, value);
     }
 
     /// <summary>
@@ -157,6 +165,10 @@ public class AsyncHexEditor : TemplatedControl {
         FontSizeProperty.Changed.AddClassHandler<AsyncHexEditor, double>(ForwardToHexView);
         ForegroundProperty.Changed.AddClassHandler<AsyncHexEditor, IBrush?>(ForwardToHexView);
         BinarySourceProperty.Changed.AddClassHandler<AsyncHexEditor, IBinarySource?>(OnBinarySourceChanged);
+        RequestBringIntoViewEvent.AddClassHandler<AsyncHexEditor>((target, args) => {
+            if (!args.Handled) {
+            }
+        });
     }
 
     /// <inheritdoc />
@@ -356,7 +368,12 @@ public class AsyncHexEditor : TemplatedControl {
 
     /// <inheritdoc />
     protected override void OnSizeChanged(SizeChangedEventArgs e) {
-        this.HexView.BringIntoView(this.Caret.Location);
+        if (this.ScrollToCaretOnSizeChanged) {
+            this.HexView.BringIntoView(this.Caret.Location);
+
+            // this.BringIntoView();
+        }
+
         base.OnSizeChanged(e);
     }
 

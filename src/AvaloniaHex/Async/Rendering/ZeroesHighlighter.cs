@@ -8,6 +8,6 @@ namespace AvaloniaHex.Async.Rendering;
 public class ZeroesHighlighter : ByteHighlighter {
     /// <inheritdoc />
     protected override bool IsHighlighted(AsyncHexView hexView, VisualBytesLine line, BitLocation location) {
-        return hexView.BinarySource!.ValidRanges.Contains(location) && line.GetByteAtAbsolute(location.ByteIndex) is byte b && b == 0;
+        return hexView.BinarySource!.ApplicableRange.Contains(location) && line.GetByteAtAbsolute(location.ByteIndex) is byte b && b == 0;
     }
 }

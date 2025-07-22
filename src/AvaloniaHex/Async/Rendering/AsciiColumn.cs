@@ -38,7 +38,7 @@ public class AsciiColumn : CellBasedColumn {
             return null;
 
         byte[] data = new byte[range.ByteLength];
-        this.HexView.BinarySource.ReadAvailableData(range.Start.ByteIndex, data);
+        this.HexView.BinarySource.ReadAvailableData(range.Start.ByteIndex, data, null);
 
         char[] output = new char[data.Length];
         byte?[] nullableData = new byte?[data.Length];
@@ -73,7 +73,8 @@ public class AsciiColumn : CellBasedColumn {
     private void GetText(ReadOnlySpan<byte?> data, BitRange dataRange, Span<char> buffer) {
         char invalidCellChar = this.InvalidCellChar;
 
-        if (this.HexView?.BinarySource?.ValidRanges is not { } valid) {
+        IBinarySource? source = this.HexView?.BinarySource;
+        if (source == null) {
             buffer.Fill(invalidCellChar);
             return;
         }
@@ -83,7 +84,7 @@ public class AsciiColumn : CellBasedColumn {
             BitRange cellRange = new BitRange(cellLocation, cellLocation.AddBits(8));
 
             byte? b = data[i];
-            buffer[i] = b.HasValue && valid.IsSuperSetOf(cellRange)
+            buffer[i] = b.HasValue && source.ApplicableRange.Contains(cellRange)
                 ? MapToPrintableChar(b.Value)
                 : invalidCellChar;
         }

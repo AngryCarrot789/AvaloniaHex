@@ -19,7 +19,7 @@ public class Selection {
         get => this._range;
         set {
             value = this.HexView.BinarySource is { } document
-                ? value.Clamp(document.ValidRanges.EnclosingRange)
+                ? value.Clamp(document.ApplicableRange)
                 : BitRange.Empty;
 
             if (this._range != value) {
@@ -48,7 +48,7 @@ public class Selection {
     /// Selects the entire document.
     /// </summary>
     public void SelectAll() {
-        this.Range = this.HexView is { BinarySource.ValidRanges.EnclosingRange: var enclosingRange }
+        this.Range = this.HexView is { BinarySource.ApplicableRange: var enclosingRange }
             ? enclosingRange
             : default;
     }

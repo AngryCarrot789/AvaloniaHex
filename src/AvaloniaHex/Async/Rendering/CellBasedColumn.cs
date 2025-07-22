@@ -111,7 +111,7 @@ public abstract class CellBasedColumn : Column {
         BitRange affectedRange = new BitRange(alignedStart, alignedEnd);
 
         // Determine the number of bytes to read from the original document.
-        if (!document.ValidRanges.IsSuperSetOf(affectedRange))
+        if (!document.ApplicableRange.Contains(affectedRange))
             return false;
 
         // We need to read the original bytes if we are overwriting, as cells do not necessarily encompass entire bytes.
@@ -121,13 +121,13 @@ public abstract class CellBasedColumn : Column {
         byte[] data = new byte[affectedRange.ByteLength];
 
         if (originalDataReadCount > 0)
-            document.ReadAvailableData(location.ByteIndex, data.AsSpan(0, originalDataReadCount));
+            document.ReadAvailableData(location.ByteIndex, data.AsSpan(0, originalDataReadCount), null);
 
         // Write all the cells in the temporary buffer.
         BitLocation newLocation = location;
         for (int i = 0; i < input.Length; i++) {
             // Are we overwriting in a valid cell in the document?
-            if (!document.ValidRanges.IsSuperSetOf(new BitRange(newLocation, newLocation.AddBits((ulong) this.BitsPerCell)))) {
+            if (!document.ApplicableRange.Contains(new BitRange(newLocation, newLocation.AddBits((ulong) this.BitsPerCell)))) {
                 return false;
             }
 
@@ -139,7 +139,7 @@ public abstract class CellBasedColumn : Column {
         }
 
         // Apply changes to document.
-        document.WriteBytes(location.ByteIndex, data);
+        document.WriteBytesForUserInput(location.ByteIndex, data);
 
         // Move to final location.
         location = newLocation;
@@ -238,7 +238,7 @@ public abstract class CellBasedColumn : Column {
     /// </summary>
     /// <returns>The location.</returns>
     public BitLocation GetFirstLocation() {
-        return this.HexView is { BinarySource.ValidRanges.EnclosingRange: var enclosingRange }
+        return this.HexView is { BinarySource.ApplicableRange: var enclosingRange }
             ? new BitLocation(enclosingRange.Start.ByteIndex, this.FirstBitIndex)
             : default;
     }
@@ -248,7 +248,7 @@ public abstract class CellBasedColumn : Column {
     /// </summary>
     /// <returns>The location.</returns>
     public BitLocation GetLastLocation(bool includeVirtualCell) {
-        return this.HexView is { BinarySource.ValidRanges.EnclosingRange: var enclosingRange }
+        return this.HexView is { BinarySource.ApplicableRange: var enclosingRange }
             ? new BitLocation(enclosingRange.End.ByteIndex - (!includeVirtualCell ? 1u : 0u), 0)
             : default;
     }
@@ -262,7 +262,7 @@ public abstract class CellBasedColumn : Column {
         if (location.BitIndex < 8 - this.BitsPerCell)
             return this.AlignToCell(new BitLocation(location.ByteIndex, location.BitIndex + this.BitsPerCell));
 
-        if (this.HexView is not { BinarySource.ValidRanges.EnclosingRange: var enclosingRange }
+        if (this.HexView is not { BinarySource.ApplicableRange: var enclosingRange }
             || location.ByteIndex == enclosingRange.Start.ByteIndex) {
             return this.GetFirstLocation();
         }
@@ -278,7 +278,7 @@ public abstract class CellBasedColumn : Column {
     /// <param name="clamp"><c>true</c> if the location should be restricted to the current document length.</param>
     /// <returns>The next cell's location.</returns>
     public BitLocation GetNextLocation(BitLocation location, bool includeVirtualCell, bool clamp) {
-        if (this.HexView is not { BinarySource.ValidRanges.EnclosingRange: var enclosingRange })
+        if (this.HexView is not { BinarySource.ApplicableRange: var enclosingRange })
             return default;
 
         if (location.BitIndex != 0)

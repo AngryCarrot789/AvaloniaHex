@@ -68,7 +68,7 @@ public class BinaryColumn : CellBasedColumn {
             return null;
 
         byte[] data = new byte[range.ByteLength];
-        this.HexView.BinarySource.ReadAvailableData(range.Start.ByteIndex, data);
+        this.HexView.BinarySource.ReadAvailableData(range.Start.ByteIndex, data, null);
 
         char[] output = new char[data.Length * 3 - 1];
         byte?[] nullableData = new byte?[data.Length];
@@ -126,7 +126,7 @@ public class BinaryColumn : CellBasedColumn {
     private void GetText(ReadOnlySpan<byte?> data, BitRange dataRange, Span<char> buffer) {
         char invalidCellChar = this.InvalidCellChar;
 
-        if (this.HexView?.BinarySource?.ValidRanges is not { } valid) {
+        if (this.HexView?.BinarySource?.ApplicableRange is not { } valid) {
             buffer.Fill(invalidCellChar);
             return;
         }

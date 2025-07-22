@@ -20,7 +20,7 @@ public sealed class Caret {
         set {
             CellBasedColumn? primaryColumn = this.PrimaryColumn;
 
-            if (primaryColumn is null || this.HexView.BinarySource is not { ValidRanges.EnclosingRange: var enclosingRange }) {
+            if (primaryColumn is null || this.HexView.BinarySource is not { ApplicableRange: var enclosingRange }) {
                 // We have no column or document to select bytes in...
                 value = default;
             }
@@ -118,7 +118,7 @@ public sealed class Caret {
         if (this.PrimaryColumn is not { } primaryColumn)
             return;
 
-        if (this.HexView is not { BinarySource.ValidRanges.EnclosingRange: var enclosingRange })
+        if (this.HexView is not { BinarySource.ApplicableRange: var enclosingRange })
             return;
 
         ulong bytesPerLine = (ulong) this.HexView.ActualBytesPerLine;
@@ -134,7 +134,7 @@ public sealed class Caret {
     /// Moves the caret to the end of the current line in the hex editor.
     /// </summary>
     public void GoToEndOfLine() {
-        if (this.HexView is not { BinarySource.ValidRanges.EnclosingRange: var enclosingRange })
+        if (this.HexView is not { BinarySource.ApplicableRange: var enclosingRange })
             return;
 
         ulong bytesPerLine = (ulong) this.HexView.ActualBytesPerLine;
@@ -171,7 +171,7 @@ public sealed class Caret {
     /// </summary>
     /// <param name="byteCount">The number of bytes to move.</param>
     public void GoBackward(ulong byteCount) {
-        if (this.HexView is not { BinarySource.ValidRanges.EnclosingRange: var enclosingRange } || this.PrimaryColumn is null)
+        if (this.HexView is not { BinarySource.ApplicableRange: var enclosingRange } || this.PrimaryColumn is null)
             return;
 
         // Note: We cannot use BitLocation.Clamp due to unsigned overflow that may happen.
@@ -204,7 +204,7 @@ public sealed class Caret {
     /// </summary>
     /// <param name="byteCount">The number of bytes to move.</param>
     public void GoForward(ulong byteCount) {
-        if (this.HexView is not { BinarySource.ValidRanges.EnclosingRange: var enclosingRange } || this.PrimaryColumn is null)
+        if (this.HexView is not { BinarySource.ApplicableRange: var enclosingRange } || this.PrimaryColumn is null)
             return;
 
         // Note: We cannot use BitLocation.Clamp due to unsigned overflow that may happen.

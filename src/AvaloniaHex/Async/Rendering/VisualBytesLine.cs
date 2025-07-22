@@ -106,7 +106,7 @@ public sealed class VisualBytesLine {
             hasChanged = true;
         }
 
-        BitRange range = this.HexView.BinarySource is { ValidRanges.EnclosingRange: var enclosingRange }
+        BitRange range = this.HexView.BinarySource is { ApplicableRange: var enclosingRange }
             ? virtualRange.Clamp(enclosingRange)
             : BitRange.Empty;
 
@@ -151,35 +151,32 @@ public sealed class VisualBytesLine {
         Span<byte?> dstDataSpan = this.Buffer.AsSpan(0, readBuffer.Length);
 
         // Fast path, just read entire range if possible.
-        if (!document.ValidRanges.IsFragmented) {
-            int read = document.ReadAvailableBytesOrRequest(this.Range.Start.ByteIndex, readBuffer);
-            for (int i = 0; i < readBuffer.Length; i++) {
-                dstDataSpan[i] = readBuffer[i];
-            }
-
-            if (read < dstDataSpan.Length) {
-                dstDataSpan.Slice(read).Clear();
-            }
-        }
-        else {
-            // Only read valid segments in the line.
-            Span<BitRange> ranges = stackalloc BitRange[dstDataSpan.Length];
-            int count = document.ValidRanges.GetIntersectingRanges(this.Range, ranges);
-            for (int i = 0; i < count; i++) {
-                BitRange range = ranges[i];
-                int relativeOffset = (int) (range.Start.ByteIndex - this.Range.Start.ByteIndex);
-
-                Span<byte?> dstDataChunk = dstDataSpan[relativeOffset..(relativeOffset + (int) range.ByteLength)];
-                int read = document.ReadAvailableBytesOrRequest(range.Start.ByteIndex, readBuffer.Slice(0, dstDataChunk.Length));
-                for (int j = 0; j < read; j++) {
-                    dstDataSpan[j] = readBuffer[j];
-                }
-                
-                if (read < dstDataChunk.Length) {
-                    dstDataChunk.Slice(read).Clear();
-                }
+        BitRangeUnion union = new BitRangeUnion();
+        document.ReadAvailableBytesOrRequest(this.Range.Start.ByteIndex, readBuffer, union);
+        dstDataSpan.Clear();
+        foreach (BitRange range in union) {
+            int length = (int) range.ByteLength;
+            // int offset = (int) (this.Range.Start.ByteIndex - range.Start.ByteIndex);
+            for (int i = 0, offset = (int) range.Start.ByteIndex; i < length; i++) {
+                dstDataSpan[i + offset] = readBuffer[i];
             }
         }
+
+        // // Only read valid segments in the line.
+        // Span<BitRange> ranges = stackalloc BitRange[readBuffer.Length];
+        // int count = document.AvailableDataRanges.GetIntersectingRanges(this.Range, ranges);
+        // for (int i = 0; i < count; i++) {
+        //     BitRange range = ranges[i];
+        //     int relativeOffset = (int) (range.Start.ByteIndex - this.Range.Start.ByteIndex);
+        //     Span<byte?> dstDataChunk = dstDataSpan[relativeOffset..(relativeOffset + (int) range.ByteLength)];
+        //     int read = document.ReadAvailableBytesOrRequest(range.Start.ByteIndex, readBuffer.Slice(0, dstDataChunk.Length));
+        //     for (int j = 0; j < read; j++) {
+        //         dstDataSpan[j] = readBuffer[j];
+        //     }
+        //     if (read < dstDataChunk.Length) {
+        //         dstDataChunk.Slice(read).Clear();
+        //     }
+        // }
     }
 
     private void CreateLineSegments() {

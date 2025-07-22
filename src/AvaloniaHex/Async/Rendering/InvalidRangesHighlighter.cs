@@ -8,6 +8,6 @@ namespace AvaloniaHex.Async.Rendering;
 public class InvalidRangesHighlighter : ByteHighlighter {
     /// <inheritdoc />
     protected override bool IsHighlighted(AsyncHexView hexView, VisualBytesLine line, BitLocation location) {
-        return !hexView.BinarySource?.ValidRanges.Contains(location) ?? false;
+        return !hexView.BinarySource?.ApplicableRange.Contains(location) ?? false;
     }
 }
