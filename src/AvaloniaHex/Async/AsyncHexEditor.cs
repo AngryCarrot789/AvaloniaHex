@@ -292,9 +292,10 @@ public class AsyncHexEditor : TemplatedControl {
     private async void OnPreviewKeyDown(object? sender, KeyEventArgs e) {
         BitLocation oldLocation = this.Caret.Location;
         bool isShiftDown = (e.KeyModifiers & KeyModifiers.Shift) != 0;
+        const KeyModifiers CtrlShift = KeyModifiers.Control | KeyModifiers.Shift;
 
         switch (e.Key) {
-            case Key.A when (e.KeyModifiers & (KeyModifiers.Control | KeyModifiers.Shift)) != 0: this.Selection.SelectLine(this.Caret); break;
+            case Key.A when (e.KeyModifiers & CtrlShift) == CtrlShift: this.Selection.SelectLine(this.Caret); break;
             case Key.A when (e.KeyModifiers & KeyModifiers.Control) != 0: this.Selection.SelectAll(); break;
 
             case Key.C when (e.KeyModifiers & KeyModifiers.Control) != 0: await this.Copy(); break;
