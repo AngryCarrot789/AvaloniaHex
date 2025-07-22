@@ -52,4 +52,9 @@ public class Selection {
             ? enclosingRange
             : default;
     }
+
+    public void SelectLine(Caret caret) {
+        VisualBytesLine? line = this.HexView.GetVisualLineByLocation(caret.Location);
+        this.Range = line != null ? line.Range : default;
+    }
 }

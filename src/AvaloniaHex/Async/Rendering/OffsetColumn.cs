@@ -13,9 +13,6 @@ public class OffsetColumn : Column {
     public static readonly StyledProperty<bool> IsUppercaseProperty =
         AvaloniaProperty.Register<OffsetColumn, bool>(nameof(IsUppercase), true);
 
-    public static readonly StyledProperty<ulong> AdditionalOffsetProperty =
-        AvaloniaProperty.Register<OffsetColumn, ulong>(nameof(AdditionalOffset), 0UL);
-
     /// <inheritdoc />
     public override Size MinimumSize => this._minimumSize;
 
@@ -27,13 +24,8 @@ public class OffsetColumn : Column {
         set => this.SetValue(IsUppercaseProperty, value);
     }
 
-    public ulong AdditionalOffset {
-        get => this.GetValue(AdditionalOffsetProperty);
-        set => this.SetValue(AdditionalOffsetProperty, value);
-    }
-
     private Size _minimumSize;
-
+    
     public OffsetColumn() {
     }
 
@@ -63,12 +55,7 @@ public class OffsetColumn : Column {
         if (this.HexView is null)
             throw new InvalidOperationException();
 
-        ulong trueOffset = line.Range.Start.ByteIndex;
-        ulong visualOffset = this.AdditionalOffset + trueOffset;
-        if (visualOffset < trueOffset)
-            visualOffset = ulong.MaxValue;
-
-        return this.CreateTextLine(this.FormatOffset(visualOffset));
+        return this.CreateTextLine(this.FormatOffset(line.Range.Start.ByteIndex));
     }
 
     /// <summary>
@@ -76,10 +63,7 @@ public class OffsetColumn : Column {
     /// </summary>
     /// <param name="offset">The offset to format.</param>
     /// <returns>The formatted offset.</returns>
-    protected virtual string FormatOffset(ulong offset) =>
-        this.IsUppercase
-        ? $"{offset:X8}:"
-        : $"{offset:x8}:";
+    protected virtual string FormatOffset(ulong offset) => this.IsUppercase ? $"{offset:X8}:" : $"{offset:x8}:";
 
     private TextLine? CreateTextLine(string text) {
         if (this.HexView is null)

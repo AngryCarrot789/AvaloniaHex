@@ -19,7 +19,7 @@ public class AsyncHexView : Control, ILogicalScrollable {
     public static readonly StyledProperty<IBinarySource?> BinarySourceProperty = AvaloniaProperty.Register<AsyncHexView, IBinarySource?>(nameof(BinarySource));
 
     /// <summary>Dependency property for <see cref="BytesPerLine"/>.</summary>
-    public static readonly StyledProperty<int?> BytesPerLineProperty = AvaloniaProperty.Register<AsyncHexView, int?>(nameof(BytesPerLine));
+    public static readonly StyledProperty<int?> BytesPerLineProperty = AvaloniaProperty.Register<AsyncHexView, int?>(nameof(BytesPerLine), validate: i => !i.HasValue || i.Value > 0);
 
     /// <summary>Dependency property for <see cref="ActualBytesPerLine"/>.</summary>
     public static readonly DirectProperty<AsyncHexView, int> ActualBytesPerLineProperty = AvaloniaProperty.RegisterDirect<AsyncHexView, int>(nameof(ActualBytesPerLine), o => o.ActualBytesPerLine);
@@ -35,7 +35,7 @@ public class AsyncHexView : Control, ILogicalScrollable {
 
     /// <summary>Dependency property for <see cref="IsHeaderVisible"/>.</summary>
     public static readonly StyledProperty<bool> IsHeaderVisibleProperty = AvaloniaProperty.Register<AsyncHexView, bool>(nameof(IsHeaderVisible), true);
-    
+
     /// <summary>Dependency property for <see cref="ScrollSize"/>.</summary>
     public static readonly StyledProperty<Size> ScrollSizeProperty = AvaloniaProperty.Register<AsyncHexView, Size>(nameof(ScrollSize), new Size(0, 3));
 
@@ -177,6 +177,31 @@ public class AsyncHexView : Control, ILogicalScrollable {
         }
     }
 
+    private int GetBytesPerLineSafely() {
+        int? bpl = this.BytesPerLine;
+        if (!bpl.HasValue) {
+            if (!this.IsArrangeValid)
+                throw new InvalidOperationException("Not arranged or arrange is dirty");
+            return this.ActualBytesPerLine;
+        }
+
+        return bpl.Value;
+    }
+
+    /// <summary>
+    /// Gets the scroll offset as the first visible line is this value.
+    /// <para>
+    /// This method relies on <see cref="BytesPerLine"/> being set or the control being arranged
+    /// </para>
+    /// </summary>
+    public ulong ByteOffset {
+        get {
+            int bpl = this.GetBytesPerLineSafely();
+            double offset = this.ScrollOffset.Y;
+            return bpl == 0 ? (ulong) offset : (ulong) (offset * bpl);
+        }
+    }
+
     /// <inheritdoc />
     Vector IScrollable.Offset {
         get => this.ScrollOffset;
@@ -190,7 +215,7 @@ public class AsyncHexView : Control, ILogicalScrollable {
     bool ILogicalScrollable.CanVerticallyScroll { get; set; } = true;
 
     bool ILogicalScrollable.IsLogicalScrollEnabled => true;
-    
+
     /// <summary>
     /// Gets or sets the scroll size, in logical units
     /// </summary>
@@ -256,6 +281,18 @@ public class AsyncHexView : Control, ILogicalScrollable {
             BytesPerLineProperty,
             ColumnPaddingProperty
         );
+    }
+
+    public void ScrollToByteOffset(ulong offset, out ulong lineStartOffset) {
+        int bpl = this.GetBytesPerLineSafely();
+        Vector oldOffset = this.ScrollOffset;
+        if (bpl == 0) {
+            this.ScrollOffset = new Vector(oldOffset.X, lineStartOffset = offset);
+        }
+        else {
+            lineStartOffset = offset - (offset % (ulong) bpl);
+            this.ScrollOffset = new Vector(oldOffset.X, lineStartOffset / (double) bpl);
+        }
     }
 
     /// <summary>
@@ -585,7 +622,7 @@ public class AsyncHexView : Control, ILogicalScrollable {
         if (source == null) {
             return false;
         }
-        
+
         BitRange enclosingRange = source.ApplicableRange;
         if (location.ByteIndex < enclosingRange.End.ByteIndex + 1 && !this.FullyVisibleRange.Contains(location) && this.ActualBytesPerLine != 0) {
             ulong firstLineIndex = this.FullyVisibleRange.Start.ByteIndex / (ulong) this.ActualBytesPerLine;
@@ -640,15 +677,15 @@ public class AsyncHexView : Control, ILogicalScrollable {
         arg1.InvalidateArrange();
     }
 
-    private void OnDataReceived(IBinarySource source, ulong offset, ulong count) {
-        this.InvalidateVisualLines(new BitRange(offset, offset + count));
+    private void OnDataReceived(object? sender, DataReceivedEventArgs e) {
+        this.InvalidateVisualLines(BitRange.FromLength(e.Offset, e.Count));
     }
 
     /// <summary>
     /// Fires the <see cref="BinarySourceChanged"/> event.
     /// </summary>
     /// <param name="e">The arguments describing the event.</param>
-    protected virtual void OnBinarySourceChanged((IBinarySource? oldSource, IBinarySource? newSource) e) { 
+    protected virtual void OnBinarySourceChanged((IBinarySource? oldSource, IBinarySource? newSource) e) {
         this.BinarySourceChanged?.Invoke(this, e);
     }
 

@@ -92,8 +92,9 @@ public abstract class CellBasedColumn : Column {
     /// <returns><c>true</c> if the document was changed, <c>false</c> otherwise.</returns>
     public bool HandleTextInput(ref BitLocation location, string input) {
         IBinarySource? document = this.HexView?.BinarySource;
-        if (document is null)
+        if (document is null || !document.CanWriteBackInto) {
             return false;
+        }
 
         // Pre-process text (e.g., remove spaces etc.)
         input = this.PrepareTextInput(input);
@@ -139,7 +140,7 @@ public abstract class CellBasedColumn : Column {
         }
 
         // Apply changes to document.
-        document.WriteBytesForUserInput(location.ByteIndex, data);
+        document.OnUserInput(location.ByteIndex, data);
 
         // Move to final location.
         location = newLocation;

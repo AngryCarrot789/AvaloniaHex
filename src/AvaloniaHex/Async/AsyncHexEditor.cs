@@ -294,6 +294,7 @@ public class AsyncHexEditor : TemplatedControl {
         bool isShiftDown = (e.KeyModifiers & KeyModifiers.Shift) != 0;
 
         switch (e.Key) {
+            case Key.A when (e.KeyModifiers & (KeyModifiers.Control | KeyModifiers.Shift)) != 0: this.Selection.SelectLine(this.Caret); break;
             case Key.A when (e.KeyModifiers & KeyModifiers.Control) != 0: this.Selection.SelectAll(); break;
 
             case Key.C when (e.KeyModifiers & KeyModifiers.Control) != 0: await this.Copy(); break;
@@ -327,7 +328,7 @@ public class AsyncHexEditor : TemplatedControl {
 
             case Key.Up when (e.KeyModifiers & KeyModifiers.Control) != 0:
                 this.HexView.ScrollOffset = new Vector(this.HexView.ScrollOffset.X,
-                    Math.Max(0, this.HexView.ScrollOffset.Y - 1)
+                    Math.Max(0, this.HexView.ScrollOffset.Y - this.HexView.ScrollSize.Height)
                 );
                 break;
 
@@ -349,7 +350,7 @@ public class AsyncHexEditor : TemplatedControl {
 
             case Key.Down when (e.KeyModifiers & KeyModifiers.Control) != 0:
                 this.HexView.ScrollOffset = new Vector(this.HexView.ScrollOffset.X,
-                    Math.Min(this.HexView.Extent.Height - 1, this.HexView.ScrollOffset.Y + 1)
+                    Math.Min(this.HexView.Extent.Height - 1, this.HexView.ScrollOffset.Y + this.HexView.ScrollSize.Height)
                 );
                 break;
 
