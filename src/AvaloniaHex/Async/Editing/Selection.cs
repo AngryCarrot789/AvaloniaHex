@@ -53,8 +53,13 @@ public class Selection {
             : default;
     }
 
+    /// <summary>
+    /// Selects the line where the caret is
+    /// </summary>
+    /// <param name="caret"></param>
     public void SelectLine(Caret caret) {
         VisualBytesLine? line = this.HexView.GetVisualLineByLocation(caret.Location);
         this.Range = line != null ? line.Range : default;
+        caret.Location = this.Range.Start;
     }
 }
