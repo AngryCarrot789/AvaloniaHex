@@ -64,6 +64,12 @@ public class AsyncHexEditor : TemplatedControl {
         AvaloniaProperty.RegisterDirect<AsyncHexEditor, AsyncHexView.ColumnCollection>(nameof(Columns), o => o.Columns);
 
     /// <summary>
+    /// Dependency property for <see cref="ResetSelectionOnDocumentChange"/>.
+    /// </summary>
+    public static readonly StyledProperty<bool> ResetSelectionOnDocumentChangeProperty =
+        AvaloniaProperty.Register<AsyncHexEditor, bool>(nameof(ResetSelectionOnDocumentChange), true);
+    
+    /// <summary>
     /// Gets or sets the horizontal scroll bar visibility.
     /// </summary>
     public ScrollBarVisibility HorizontalScrollBarVisibility {
@@ -111,6 +117,14 @@ public class AsyncHexEditor : TemplatedControl {
     public IBinarySource? BinarySource {
         get => this.GetValue(BinarySourceProperty);
         set => this.SetValue(BinarySourceProperty, value);
+    }
+    
+    /// <summary>
+    /// Gets or sets whether to reset the caret position when the binary source changes
+    /// </summary>
+    public bool ResetSelectionOnDocumentChange {
+        get => this.GetValue(ResetSelectionOnDocumentChangeProperty);
+        set => this.SetValue(ResetSelectionOnDocumentChangeProperty, value);
     }
 
     /// <summary>
@@ -194,8 +208,11 @@ public class AsyncHexEditor : TemplatedControl {
 
     private void HexViewOnBinarySourceChanged(object? sender, (IBinarySource? OldSource, IBinarySource? NewSource) e) {
         this.BinarySource = e.NewSource;
-        this.Caret.Location = default;
-        this.UpdateSelection(this.Caret.Location, false);
+        if (this.ResetSelectionOnDocumentChange) {
+            this.Caret.Location = default;
+            this.UpdateSelection(this.Caret.Location, false);
+        }
+
         this.OnBinarySourceChanged(e);
     }
 
