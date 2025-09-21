@@ -506,6 +506,6 @@ public class HexEditor : TemplatedControl {
 
         // Using dispatcher here prevents external focus managers having an
         // inconsistent state. Focusing another element in OnGotFocus is a bad idea
-        Dispatcher.UIThread.InvokeAsync(() => this.HexView.Focus(), DispatcherPriority.Background);
+        Dispatcher.UIThread.Post(() => this.HexView.Focus(), DispatcherPriority.Background);
     }
 }
